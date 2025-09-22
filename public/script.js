@@ -679,18 +679,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 console.log('🤖 Resposta da IA:', data);
                 
-                // Processar resposta igual ao script original
-                if (data.status === 'sucesso' || data.status === 'sucesso_ia') {
+                // Processar resposta com todos os status possíveis
+                if (data.status === 'sucesso' || data.status === 'sucesso_ia' || data.status === 'sucesso_ia_avancada') {
                     addMessage(data.resposta, 'bot', { 
                         sourceRow: data.sourceRow,
                         source: data.source, 
                         tabulacoes: data.tabulacoes
                     });
-                } else if (data.status === 'clarification_needed') {
+                } else if (data.status === 'clarification_needed' || data.status === 'clarification_needed_offline') {
                     addMessage(data.resposta, 'bot', { 
                         options: data.options, 
                         source: data.source,
                         sourceRow: data.sourceRow
+                    });
+                } else if (data.status === 'resposta_padrao' || data.status === 'sucesso_offline') {
+                    addMessage(data.resposta, 'bot', { 
+                        sourceRow: data.sourceRow || 'Sistema',
+                        source: data.source || 'Sistema'
                     });
                 } else {
                     addMessage(data.resposta || data.error || "Resposta não disponível", 'bot', {
