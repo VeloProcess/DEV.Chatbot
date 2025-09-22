@@ -194,30 +194,40 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // Buscar dados da planilha real com timeout
+    console.log('✅ ask-simple: Google Sheets configurado, testando acesso...');
+    
+    // Buscar dados da planilha
     let faqData;
     try {
-      console.log('🔍 ask-simple: Tentando buscar dados da planilha real...');
+      console.log('🔍 ask-simple: Testando acesso à planilha...');
       console.log('🔍 ask-simple: ID da planilha:', SPREADSHEET_ID);
       console.log('🔍 ask-simple: Faixa:', FAQ_SHEET_NAME);
       
-      // Adicionar timeout de 5 segundos para evitar 504
-      faqData = await Promise.race([
-        getFaqData(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout na busca da planilha')), 5000)
-        )
-      ]);
-      
-      console.log('✅ ask-simple: Dados da planilha obtidos com sucesso');
-    } catch (error) {
-      console.log('❌ ask-simple: Erro ao buscar planilha:', error);
-      console.log('❌ ask-simple: Detalhes do erro:', {
-        message: error.message,
-        code: error.code,
-        status: error.status,
-        response: error.response?.data
+      // Teste básico de acesso
+      const response = await sheets.spreadsheets.get({
+        spreadsheetId: SPREADSHEET_ID,
       });
+      
+      console.log('✅ ask-simple: Acesso à planilha OK:', response.data.properties?.title);
+      
+      // Agora buscar os dados
+      const dataResponse = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: FAQ_SHEET_NAME,
+      });
+      
+      if (!dataResponse.data.values || dataResponse.data.values.length === 0) {
+        throw new Error("Planilha FAQ vazia ou não encontrada");
+      }
+      
+      faqData = dataResponse.data.values;
+      console.log('✅ ask-simple: Dados obtidos:', faqData.length, 'linhas');
+      
+    } catch (error) {
+      console.log('❌ ask-simple: Erro detalhado:', error);
+      console.log('❌ ask-simple: Código do erro:', error.code);
+      console.log('❌ ask-simple: Status do erro:', error.status);
+      console.log('❌ ask-simple: Mensagem do erro:', error.message);
       
       return res.status(500).json({
         status: "erro_planilha",
