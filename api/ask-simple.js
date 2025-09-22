@@ -29,35 +29,56 @@ try {
 }
 
 
-// Função para obter dados APENAS da planilha
+// Função para obter dados com timeout inteligente
 async function getFaqData() {
-  // Se cache está válido, usar cache
+  // Se cache está válido, usar cache (resposta instantânea)
   if (cacheData && Date.now() - lastUpdate < CACHE_DURATION) {
-    console.log('📦 ask-simple: Usando dados do cache');
+    console.log('📦 ask-simple: Usando dados do cache (instantâneo)');
     return cacheData;
   }
   
-  // Buscar dados diretamente da planilha
+  // Se não tem cache, tentar buscar com timeout de 2 segundos
   if (!sheets) {
     throw new Error('Google Sheets não configurado');
   }
   
-  console.log('🔍 ask-simple: Buscando dados diretamente da planilha...');
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: FAQ_SHEET_NAME,
-  });
+  console.log('🔍 ask-simple: Cache expirado, buscando dados da planilha...');
   
-  if (!response.data.values || response.data.values.length === 0) {
-    throw new Error("Planilha FAQ vazia ou não encontrada");
+  try {
+    // Timeout de 2 segundos para evitar 504
+    const response = await Promise.race([
+      sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: FAQ_SHEET_NAME,
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout da planilha')), 2000)
+      )
+    ]);
+    
+    if (!response.data.values || response.data.values.length === 0) {
+      throw new Error("Planilha FAQ vazia ou não encontrada");
+    }
+    
+    // Atualizar cache
+    cacheData = response.data.values;
+    lastUpdate = Date.now();
+    
+    console.log('✅ ask-simple: Dados da planilha obtidos com sucesso:', cacheData.length, 'linhas');
+    return cacheData;
+    
+  } catch (error) {
+    console.log('⚠️ ask-simple: Erro ao buscar planilha:', error.message);
+    
+    // Se tem cache antigo, usar ele mesmo expirado
+    if (cacheData) {
+      console.log('📦 ask-simple: Usando cache antigo como fallback');
+      return cacheData;
+    }
+    
+    // Se não tem cache, tentar buscar dados básicos da planilha
+    throw new Error('Não foi possível acessar a planilha e não há cache disponível');
   }
-  
-  // Atualizar cache
-  cacheData = response.data.values;
-  lastUpdate = Date.now();
-  
-  console.log('✅ ask-simple: Dados da planilha obtidos com sucesso:', cacheData.length, 'linhas');
-  return cacheData;
 }
 
 // Função para normalizar texto
@@ -182,6 +203,32 @@ function findMatches(pergunta, faqData) {
   return correspondenciasUnicas;
 }
 
+// Função para inicializar cache em background
+async function initializeCache() {
+  if (!sheets) {
+    console.log('⚠️ ask-simple: Google Sheets não configurado, pulando inicialização do cache');
+    return;
+  }
+  
+  try {
+    console.log('🚀 ask-simple: Inicializando cache em background...');
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: FAQ_SHEET_NAME,
+    });
+    
+    if (response.data.values && response.data.values.length > 0) {
+      cacheData = response.data.values;
+      lastUpdate = Date.now();
+      console.log('✅ ask-simple: Cache inicializado com', cacheData.length, 'linhas');
+    }
+  } catch (error) {
+    console.log('⚠️ ask-simple: Erro ao inicializar cache:', error.message);
+  }
+}
+
+// Inicializar cache na primeira execução
+initializeCache();
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -203,6 +250,30 @@ module.exports = async function handler(req, res) {
 
     console.log('🔍 ask-simple: Pergunta recebida:', { pergunta, email, usar_ia_avancada });
 
+    // Timeout global de 3 segundos para evitar 504
+    const result = await Promise.race([
+      processRequest(pergunta, email, usar_ia_avancada),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout global da API')), 3000)
+      )
+    ]);
+    
+    return res.status(200).json(result);
+    
+  } catch (error) {
+    console.error('❌ ask-simple: Erro crítico:', error);
+    return res.status(500).json({
+      status: "erro_critico",
+      resposta: "Desculpe, ocorreu um erro interno. Tente novamente em alguns instantes.",
+      source: "Sistema",
+      error: error.message
+    });
+  }
+}
+
+// Função separada para processar a requisição
+async function processRequest(pergunta, email, usar_ia_avancada) {
+  try {
     // Obter dados APENAS da planilha
     const faqData = await getFaqData();
     console.log('📊 ask-simple: Dados obtidos da planilha:', faqData.length, 'linhas');
@@ -211,20 +282,20 @@ module.exports = async function handler(req, res) {
     const correspondencias = findMatches(pergunta, faqData);
     
     if (correspondencias.length === 0) {
-      return res.status(200).json({
+      return {
         status: "sucesso_offline",
         resposta: "Desculpe, não encontrei informações sobre essa pergunta na nossa base de dados. Entre em contato com nosso suporte.",
         sourceRow: 'N/A',
         source: 'Planilha Google Sheets',
         modo: 'offline',
         nivel: 2
-      });
+      };
     }
 
     // Se encontrou correspondências
     if (correspondencias.length === 1 || correspondencias[0].score > correspondencias[1]?.score) {
       console.log('✅ ask-simple: Resposta única encontrada');
-      return res.status(200).json({
+      return {
         status: "sucesso_offline",
         resposta: correspondencias[0].resposta,
         sourceRow: correspondencias[0].sourceRow,
@@ -232,10 +303,10 @@ module.exports = async function handler(req, res) {
         source: "Planilha Google Sheets",
         modo: 'offline',
         nivel: 2
-      });
+      };
     } else {
       console.log('✅ ask-simple: Múltiplas correspondências encontradas');
-      return res.status(200).json({
+      return {
         status: "clarification_needed_offline",
         resposta: `Encontrei vários tópicos sobre "${pergunta}". Qual deles se encaixa melhor na sua dúvida?`,
         options: correspondencias.map(c => c.perguntaOriginal).slice(0, 12),
@@ -243,16 +314,11 @@ module.exports = async function handler(req, res) {
         sourceRow: 'Pergunta de Esclarecimento',
         modo: 'offline',
         nivel: 2
-      });
+      };
     }
 
   } catch (error) {
-    console.error('❌ ask-simple: Erro:', error);
-    return res.status(500).json({
-      status: "erro_critico",
-      resposta: "Desculpe, ocorreu um erro interno. Tente novamente em alguns instantes.",
-      source: "Sistema",
-      error: error.message
-    });
+    console.error('❌ ask-simple: Erro no processamento:', error);
+    throw error; // Re-throw para ser capturado pelo timeout global
   }
 };
