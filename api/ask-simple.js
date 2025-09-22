@@ -180,11 +180,19 @@ module.exports = async function handler(req, res) {
 
     console.log('🔍 ask-simple: Pergunta recebida:', { pergunta, email, usar_ia_avancada });
 
-    // Buscar dados da planilha real
+    // Buscar dados da planilha real com timeout
     let faqData;
     try {
       console.log('🔍 ask-simple: Tentando buscar dados da planilha real...');
-      faqData = await getFaqData();
+      
+      // Adicionar timeout de 5 segundos para evitar 504
+      faqData = await Promise.race([
+        getFaqData(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout na busca da planilha')), 5000)
+        )
+      ]);
+      
       console.log('✅ ask-simple: Dados da planilha obtidos com sucesso');
     } catch (error) {
       console.log('⚠️ ask-simple: Erro ao buscar planilha, usando fallback:', error.message);
