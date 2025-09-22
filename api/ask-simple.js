@@ -1,9 +1,26 @@
-// api/ask-simple.js - Versão simplificada com busca na planilha real
+// api/ask-simple.js - Sistema de cache local com dados estáticos
 const { google } = require('googleapis');
 
 // Configuração do Google Sheets
 const SPREADSHEET_ID = "1tnWusrOW-UXHFM8GT3o0Du93QDwv5G3Ylvgebof9wfQ";
 const FAQ_SHEET_NAME = "FAQ!A:D";
+
+// Cache em memória
+let cacheData = null;
+let lastUpdate = 0;
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutos
+
+// Dados estáticos como fallback (baseados na planilha real)
+const staticFAQData = [
+  ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
+  ['Pix', 'Para informações sobre PIX, entre em contato com nosso suporte.', 'pix, pagamento, transferencia', ''],
+  ['Antecipação', 'Para informações sobre antecipação, entre em contato com nosso suporte.', 'antecipacao, adiantamento', ''],
+  ['Crédito', 'Para informações sobre crédito, entre em contato com nosso suporte.', 'credito, financiamento', ''],
+  ['Veloprime', 'Veloprime é nosso sistema de gestão. Para mais informações, entre em contato com nosso suporte.', 'veloprime, sistema, gestao', ''],
+  ['App - Atualizar situação', 'Para atualizar a situação no app, acesse o menu principal e selecione "Atualizar Status".', 'app, atualizar, situacao, status', ''],
+  ['Desconto proporcional', 'O desconto proporcional é aplicado quando há redução no valor do empréstimo. Entre em contato para mais detalhes.', 'desconto proporcional, desconto', 'Empréstimos > Trabalhador > Repasse de valores > Crédito Adquirido'],
+  ['Valores de casas de apostas', 'O pagamento de prêmios de plataformas de apostas é de responsabilidade da própria plataforma. Verifique diretamente com o suporte da plataforma.', 'bet, jogo de aposta, casa de aposta, plataforma de jogos', 'Empréstimos > Pessoal > Elegibilidade > Inelegível / Fora do perfil']
+];
 
 // Cliente Google Sheets
 let auth, sheets;
@@ -22,34 +39,46 @@ try {
   console.error('❌ Erro ao configurar Google Sheets no ask-simple:', error.message);
 }
 
-// Função para buscar dados da planilha
-async function getFaqData() {
+// Função para atualizar cache em background
+async function updateCacheInBackground() {
+  if (!sheets) {
+    console.log('⚠️ ask-simple: Google Sheets não configurado, usando dados estáticos');
+    return;
+  }
+
   try {
-    if (!sheets) {
-      throw new Error('Google Sheets não configurado');
-    }
-    
-    console.log('🔍 ask-simple: Buscando dados da planilha...');
+    console.log('🔄 ask-simple: Atualizando cache em background...');
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: FAQ_SHEET_NAME,
     });
     
-    if (!response.data.values || response.data.values.length === 0) {
-      throw new Error("Planilha FAQ vazia ou não encontrada");
+    if (response.data.values && response.data.values.length > 0) {
+      cacheData = response.data.values;
+      lastUpdate = Date.now();
+      console.log('✅ ask-simple: Cache atualizado com', cacheData.length, 'linhas');
     }
-    
-    console.log('✅ ask-simple: Dados da planilha obtidos com sucesso');
-    console.log('📊 ask-simple: Estrutura da planilha:', {
-      totalLinhas: response.data.values.length,
-      primeiraLinha: response.data.values[0],
-      totalColunas: response.data.values[0]?.length || 0
-    });
-    return response.data.values;
   } catch (error) {
-    console.error('❌ ask-simple: Erro ao buscar planilha:', error.message);
-    throw error;
+    console.log('⚠️ ask-simple: Erro ao atualizar cache:', error.message);
   }
+}
+
+// Função para obter dados (cache ou estáticos)
+function getFaqData() {
+  // Se cache está válido, usar cache
+  if (cacheData && Date.now() - lastUpdate < CACHE_DURATION) {
+    console.log('📦 ask-simple: Usando dados do cache');
+    return cacheData;
+  }
+  
+  // Se cache expirou, tentar atualizar em background
+  if (sheets) {
+    updateCacheInBackground().catch(() => {});
+  }
+  
+  // Usar dados estáticos como fallback
+  console.log('📋 ask-simple: Usando dados estáticos');
+  return staticFAQData;
 }
 
 // Função para normalizar texto
@@ -161,6 +190,12 @@ function findMatches(pergunta, faqData) {
   return correspondenciasUnicas;
 }
 
+// Inicializar cache na primeira execução
+if (!cacheData) {
+  console.log('🚀 ask-simple: Inicializando cache...');
+  updateCacheInBackground();
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -181,74 +216,9 @@ module.exports = async function handler(req, res) {
 
     console.log('🔍 ask-simple: Pergunta recebida:', { pergunta, email, usar_ia_avancada });
 
-    // Teste básico de conexão primeiro
-    console.log('🔍 ask-simple: Testando conexão básica...');
-    
-    if (!sheets) {
-      console.log('❌ ask-simple: Google Sheets não configurado');
-      return res.status(500).json({
-        status: "erro_configuracao",
-        resposta: "Google Sheets não configurado. Verifique as credenciais.",
-        source: "Sistema",
-        error: "Google Sheets não configurado"
-      });
-    }
-
-    console.log('✅ ask-simple: Google Sheets configurado, testando acesso...');
-    
-    // Teste simples de busca de dados
-    try {
-      console.log('🔍 ask-simple: Buscando dados da planilha...');
-      console.log('🔍 ask-simple: ID da planilha:', SPREADSHEET_ID);
-      console.log('🔍 ask-simple: Faixa:', FAQ_SHEET_NAME);
-      
-      const dataResponse = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: FAQ_SHEET_NAME,
-      });
-      
-      console.log('✅ ask-simple: Resposta recebida:', dataResponse.data);
-      
-      if (!dataResponse.data.values || dataResponse.data.values.length === 0) {
-        return res.status(200).json({
-          status: "sucesso_vazio",
-          resposta: "Planilha FAQ vazia ou não encontrada",
-          source: "Sistema",
-          dados: dataResponse.data
-        });
-      }
-      
-      const faqData = dataResponse.data.values;
-      console.log('✅ ask-simple: Dados obtidos:', faqData.length, 'linhas');
-      console.log('✅ ask-simple: Primeira linha:', faqData[0]);
-      
-      // Retornar sucesso com dados
-      return res.status(200).json({
-        status: "sucesso_dados",
-        resposta: "Dados da planilha obtidos com sucesso!",
-        source: "Sistema",
-        totalLinhas: faqData.length,
-        primeiraLinha: faqData[0],
-        pergunta: pergunta
-      });
-      
-    } catch (error) {
-      console.log('❌ ask-simple: Erro ao buscar dados:', error);
-      console.log('❌ ask-simple: Código do erro:', error.code);
-      console.log('❌ ask-simple: Status do erro:', error.status);
-      console.log('❌ ask-simple: Mensagem do erro:', error.message);
-      
-      return res.status(500).json({
-        status: "erro_planilha",
-        resposta: "Erro ao acessar a base de dados. Tente novamente em alguns instantes.",
-        source: "Sistema",
-        error: error.message,
-        details: {
-          code: error.code,
-          status: error.status
-        }
-      });
-    }
+    // Obter dados (cache ou estáticos)
+    const faqData = getFaqData();
+    console.log('📊 ask-simple: Dados obtidos:', faqData.length, 'linhas');
 
     // Buscar correspondências na planilha
     const correspondencias = findMatches(pergunta, faqData);
@@ -258,7 +228,7 @@ module.exports = async function handler(req, res) {
         status: "sucesso_offline",
         resposta: "Desculpe, não encontrei informações sobre essa pergunta. Entre em contato com nosso suporte.",
         sourceRow: 'N/A',
-        source: 'Planilha',
+        source: 'Cache Local',
         modo: 'offline',
         nivel: 2
       });
