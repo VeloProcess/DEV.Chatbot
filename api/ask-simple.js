@@ -30,9 +30,9 @@ async function getFaqData() {
   
   console.log('🔍 ask-simple: Buscando dados da planilha...');
   
-  // Timeout de 3 segundos para evitar FUNCTION_INVOCATION_TIMEOUT
+  // Timeout de 10 segundos para dar tempo da planilha responder
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Timeout da planilha')), 3000);
+    setTimeout(() => reject(new Error('Timeout da planilha')), 10000);
   });
   
   const sheetsPromise = sheets.spreadsheets.values.get({
