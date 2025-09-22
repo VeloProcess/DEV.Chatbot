@@ -1,9 +1,16 @@
-// api/ask-simple.js - Busca sempre na planilha (sem cache)
+// api/ask-simple.js - Busca na planilha com cache local
 const { google } = require('googleapis');
 
 // Configuração do Google Sheets
 const SPREADSHEET_ID = "1tnWusrOW-UXHFM8GT3o0Du93QDwv5G3Ylvgebof9wfQ";
 const FAQ_SHEET_NAME = "FAQ!A:D";
+
+// Cache global para Vercel (persiste entre requests)
+global.faqCache = global.faqCache || {
+  data: null,
+  timestamp: 0,
+  ttl: 300000 // 5 minutos
+};
 
 // Cliente Google Sheets
 let auth, sheets;
@@ -22,17 +29,24 @@ try {
   console.error('❌ Erro ao configurar Google Sheets no ask-simple:', error.message);
 }
 
-// Função para buscar dados da planilha (sempre atualizado)
+// Função para buscar dados da planilha (com cache global)
 async function getFaqData() {
+  // Verificar cache global primeiro
+  const now = Date.now();
+  if (global.faqCache.data && (now - global.faqCache.timestamp) < global.faqCache.ttl) {
+    console.log('✅ ask-simple: Usando cache global');
+    return global.faqCache.data;
+  }
+  
   if (!sheets) {
     throw new Error('Google Sheets não configurado');
   }
   
   console.log('🔍 ask-simple: Buscando dados da planilha...');
   
-  // Timeout de 10 segundos para dar tempo da planilha responder
+  // Timeout de 8 segundos para Vercel (limite de 10s)
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Timeout da planilha')), 10000);
+    setTimeout(() => reject(new Error('Timeout da planilha')), 8000);
   });
   
   const sheetsPromise = sheets.spreadsheets.values.get({
@@ -45,6 +59,10 @@ async function getFaqData() {
   if (!response.data.values || response.data.values.length === 0) {
     throw new Error("Planilha FAQ vazia ou não encontrada");
   }
+  
+  // Atualizar cache global
+  global.faqCache.data = response.data.values;
+  global.faqCache.timestamp = now;
   
   console.log('✅ ask-simple: Dados da planilha obtidos:', response.data.values.length, 'linhas');
   return response.data.values;
