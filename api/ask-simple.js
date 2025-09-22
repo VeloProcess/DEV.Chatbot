@@ -180,21 +180,16 @@ module.exports = async function handler(req, res) {
 
     console.log('🔍 ask-simple: Pergunta recebida:', { pergunta, email, usar_ia_avancada });
 
-    // Buscar dados da planilha
-    let faqData;
-    try {
-      faqData = await getFaqData();
-    } catch (error) {
-      console.log('⚠️ ask-simple: Erro ao buscar planilha, usando fallback:', error.message);
-      
-      // Dados de fallback se a planilha falhar
-      faqData = [
-        ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
-        ['Pix', 'Para informações sobre PIX, entre em contato com nosso suporte.', 'pix, pagamento, transferencia', ''],
-        ['Antecipação', 'Para informações sobre antecipação, entre em contato com nosso suporte.', 'antecipacao, adiantamento', ''],
-        ['Crédito', 'Para informações sobre crédito, entre em contato com nosso suporte.', 'credito, financiamento', '']
-      ];
-    }
+    // Usar dados de fallback por enquanto para evitar timeout
+    console.log('⚠️ ask-simple: Usando dados de fallback para evitar timeout');
+    const faqData = [
+      ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
+      ['Pix', 'Para informações sobre PIX, entre em contato com nosso suporte.', 'pix, pagamento, transferencia', ''],
+      ['Antecipação', 'Para informações sobre antecipação, entre em contato com nosso suporte.', 'antecipacao, adiantamento', ''],
+      ['Crédito', 'Para informações sobre crédito, entre em contato com nosso suporte.', 'credito, financiamento', ''],
+      ['Veloprime', 'Veloprime é nosso sistema de gestão. Para mais informações, entre em contato com nosso suporte.', 'veloprime, sistema, gestao', ''],
+      ['App - Atualizar situação', 'Para atualizar a situação no app, acesse o menu principal e selecione "Atualizar Status".', 'app, atualizar, situacao, status', '']
+    ];
 
     // Buscar correspondências na planilha
     const correspondencias = findMatches(pergunta, faqData);
