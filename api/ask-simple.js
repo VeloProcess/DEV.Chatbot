@@ -196,32 +196,40 @@ module.exports = async function handler(req, res) {
 
     console.log('✅ ask-simple: Google Sheets configurado, testando acesso...');
     
-    // Buscar dados da planilha
+    // Buscar dados da planilha com timeout agressivo
     let faqData;
     try {
       console.log('🔍 ask-simple: Testando acesso à planilha...');
       console.log('🔍 ask-simple: ID da planilha:', SPREADSHEET_ID);
       console.log('🔍 ask-simple: Faixa:', FAQ_SHEET_NAME);
       
-      // Teste básico de acesso
-      const response = await sheets.spreadsheets.get({
-        spreadsheetId: SPREADSHEET_ID,
-      });
-      
-      console.log('✅ ask-simple: Acesso à planilha OK:', response.data.properties?.title);
-      
-      // Agora buscar os dados
-      const dataResponse = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: FAQ_SHEET_NAME,
-      });
-      
-      if (!dataResponse.data.values || dataResponse.data.values.length === 0) {
-        throw new Error("Planilha FAQ vazia ou não encontrada");
-      }
-      
-      faqData = dataResponse.data.values;
-      console.log('✅ ask-simple: Dados obtidos:', faqData.length, 'linhas');
+      // Timeout de 3 segundos para evitar 504
+      faqData = await Promise.race([
+        (async () => {
+          // Teste básico de acesso
+          const response = await sheets.spreadsheets.get({
+            spreadsheetId: SPREADSHEET_ID,
+          });
+          
+          console.log('✅ ask-simple: Acesso à planilha OK:', response.data.properties?.title);
+          
+          // Agora buscar os dados
+          const dataResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: FAQ_SHEET_NAME,
+          });
+          
+          if (!dataResponse.data.values || dataResponse.data.values.length === 0) {
+            throw new Error("Planilha FAQ vazia ou não encontrada");
+          }
+          
+          console.log('✅ ask-simple: Dados obtidos:', dataResponse.data.values.length, 'linhas');
+          return dataResponse.data.values;
+        })(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout na busca da planilha (3s)')), 3000)
+        )
+      ]);
       
     } catch (error) {
       console.log('❌ ask-simple: Erro detalhado:', error);
