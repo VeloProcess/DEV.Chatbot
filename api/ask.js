@@ -26,7 +26,7 @@ try {
   } else {
     auth = new google.auth.GoogleAuth({
       credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
     sheets = google.sheets({ version: 'v4', auth });
   }
