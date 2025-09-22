@@ -112,18 +112,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para verificar conectividade periodicamente
     async function checkConnectivity() {
         try {
-            // Usar endpoint de teste primeiro para verificar se o servidor está funcionando
-            const response = await fetch('/api/test', {
+            // Usar endpoint de teste simples primeiro
+            const response = await fetch('/api/simple-test', {
                 method: 'GET',
                 signal: AbortSignal.timeout(3000) // 3 segundos de timeout
             });
             
             if (response.ok) {
+                const data = await response.json();
+                console.log('✅ Teste simples funcionou:', data);
                 updateConnectivityIndicator('online');
             } else {
+                console.log('❌ Teste simples falhou:', response.status);
                 updateConnectivityIndicator('weak-signal');
             }
         } catch (error) {
+            console.log('❌ Erro no teste simples:', error);
             if (error.name === 'TimeoutError') {
                 updateConnectivityIndicator('timeout');
             } else {
