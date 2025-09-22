@@ -3,7 +3,7 @@ const { google } = require('googleapis');
 
 // Configuração do Google Sheets
 const SPREADSHEET_ID = "1tnWusrOW-UXHFM8GT3o0Du93QDwv5G3Ylvgebof9wfQ";
-const FAQ_SHEET_NAME = "FAQ!A:Z";
+const FAQ_SHEET_NAME = "FAQ!A:C";
 
 // Cliente Google Sheets
 let auth, sheets;
@@ -69,16 +69,10 @@ function findMatches(pergunta, faqData) {
   const cabecalho = faqData[0];
   const dados = faqData.slice(1);
   
-  // Buscar colunas de forma mais flexível
-  const idxPergunta = cabecalho.findIndex(col => 
-    col && col.toLowerCase().includes('pergunta')
-  );
-  const idxPalavrasChave = cabecalho.findIndex(col => 
-    col && (col.toLowerCase().includes('palavra') || col.toLowerCase().includes('chave'))
-  );
-  const idxResposta = cabecalho.findIndex(col => 
-    col && col.toLowerCase().includes('resposta')
-  );
+  // Usar índices fixos baseados na estrutura da planilha
+  const idxPergunta = 0; // Coluna A
+  const idxResposta = 1; // Coluna B
+  const idxPalavrasChave = 2; // Coluna C
 
   console.log('🔍 ask-simple: Índices encontrados:', {
     pergunta: idxPergunta,
@@ -86,10 +80,7 @@ function findMatches(pergunta, faqData) {
     resposta: idxResposta
   });
 
-  if (idxPergunta === -1 || idxResposta === -1) {
-    console.log('⚠️ ask-simple: Colunas essenciais não encontradas, usando fallback');
-    return [];
-  }
+  console.log('✅ ask-simple: Usando estrutura fixa da planilha FAQ');
 
   const palavrasDaBusca = normalizarTexto(pergunta).split(' ').filter(p => p.length > 2);
   let todasAsCorrespondencias = [];
