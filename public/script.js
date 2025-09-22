@@ -669,9 +669,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!textoDaPergunta.trim()) return;
             showTypingIndicator();
             try {
-                // Testar endpoint simplificado primeiro
-                const url = `/api/ask-simple?pergunta=${encodeURIComponent(textoDaPergunta)}&email=${encodeURIComponent(dadosAtendente.email)}&usar_ia_avancada=true`;
-                console.log('🔍 Testando endpoint simplificado:', url);
+                // Usar endpoint principal como no script original
+                const url = `/api/ask?pergunta=${encodeURIComponent(textoDaPergunta)}&email=${encodeURIComponent(dadosAtendente.email)}`;
+                console.log('🔍 Buscando resposta:', url);
                 const response = await fetch(url);
                 hideTypingIndicator();
                 if (!response.ok) throw new Error(`Erro de rede ou API: ${response.status}`);
@@ -679,37 +679,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 console.log('🤖 Resposta da IA:', data);
                 
-                // Atualizar indicador de conectividade baseado na resposta
-                updateConnectivityIndicator('success', data);
-
-                // Processar resposta da IA Avançada
-                if (data.status === 'sucesso_ia_avancada') {
-                    addMessage(data.resposta, 'bot', { 
-                        sourceRow: data.sourceRow || 'IA Avançada',
-                        source: data.source || 'IA Avançada',
-                        intencao: data.intencao,
-                        urgencia: data.urgencia,
-                        sentimento: data.sentimento,
-                        confianca: data.confianca
-                    });
-                    
-                    // Mostrar follow-ups se disponíveis
-                    if (data.followups && data.followups.length > 0) {
-                        mostrarFollowUps(data.followups);
-                    }
-                    
-                    // Mostrar sugestões proativas se disponíveis
-                    if (data.sugestoes_proativas && data.sugestoes_proativas.length > 0) {
-                        mostrarSugestoesProativas(data.sugestoes_proativas);
-                    }
-                    
-                    // Mostrar sugestões relacionadas se disponíveis
-                    if (data.sugestoes_relacionadas && data.sugestoes_relacionadas.length > 0) {
-                        mostrarSugestoesRelacionadas(data.sugestoes_relacionadas);
-                    }
-                    
-                } else if (data.status === 'sucesso' || data.status === 'sucesso_ia') {
-                    // Resposta tradicional
+                // Processar resposta igual ao script original
+                if (data.status === 'sucesso' || data.status === 'sucesso_ia') {
                     addMessage(data.resposta, 'bot', { 
                         sourceRow: data.sourceRow,
                         source: data.source, 
