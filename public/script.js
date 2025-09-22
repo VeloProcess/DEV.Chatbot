@@ -669,8 +669,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!textoDaPergunta.trim()) return;
             showTypingIndicator();
             try {
-                // Usar endpoint principal como no script original
-                const url = `/api/ask?pergunta=${encodeURIComponent(textoDaPergunta)}&email=${encodeURIComponent(dadosAtendente.email)}`;
+        // Usar endpoint de debug temporariamente
+        const url = `/api/ask-debug?pergunta=${encodeURIComponent(textoDaPergunta)}&email=${encodeURIComponent(dadosAtendente.email)}`;
                 console.log('🔍 Buscando resposta:', url);
                 const response = await fetch(url);
                 hideTypingIndicator();
