@@ -112,7 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para verificar conectividade periodicamente
     async function checkConnectivity() {
         try {
-            const response = await fetch('/api/ask?pergunta=teste&email=teste@velotax.com.br&usar_ia_avancada=false', {
+            // Usar endpoint de teste primeiro para verificar se o servidor está funcionando
+            const response = await fetch('/api/test', {
                 method: 'GET',
                 signal: AbortSignal.timeout(3000) // 3 segundos de timeout
             });
