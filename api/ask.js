@@ -489,16 +489,16 @@ Tente novamente em alguns instantes, ou entre em contato diretamente com nosso s
 
 Sua pergunta foi: "${pergunta}"`;
 
-  return res.status(200).json({
-    status: "resposta_padrao",
-    resposta: respostaPadrao,
-    source: "Sistema",
-    sourceRow: 'Resposta Padrão',
-    modo: 'offline',
-    nivel: 3,
-    aviso: 'Sistema em modo offline - conectividade limitada'
-  });
-  
+    return res.status(200).json({
+      status: "resposta_padrao",
+      resposta: respostaPadrao,
+      source: "Sistema",
+      sourceRow: 'Resposta Padrão',
+      modo: 'offline',
+      nivel: 3,
+      aviso: 'Sistema em modo offline - conectividade limitada'
+    });
+    
   } catch (error) {
     console.error('❌ Erro crítico em processAskRequest:', error);
     return res.status(500).json({
