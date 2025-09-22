@@ -85,6 +85,9 @@ function findMatches(pergunta, faqData) {
   const palavrasDaBusca = normalizarTexto(pergunta).split(' ').filter(p => p.length > 2);
   let todasAsCorrespondencias = [];
 
+  console.log('🔍 ask-simple: Palavras da busca:', palavrasDaBusca);
+  console.log('🔍 ask-simple: Total de linhas para buscar:', dados.length);
+
   for (let i = 0; i < dados.length; i++) {
     const linhaAtual = dados[i];
     const textoPalavrasChave = idxPalavrasChave !== -1 ? 
@@ -92,19 +95,33 @@ function findMatches(pergunta, faqData) {
     const textoPergunta = normalizarTexto(linhaAtual[idxPergunta] || '');
     let relevanceScore = 0;
     
+    console.log(`🔍 ask-simple: Linha ${i + 2}:`, {
+      pergunta: linhaAtual[idxPergunta],
+      palavrasChave: linhaAtual[idxPalavrasChave],
+      textoPerguntaNormalizado: textoPergunta,
+      textoPalavrasChaveNormalizado: textoPalavrasChave
+    });
+    
     // Buscar nas palavras-chave se existir
     if (textoPalavrasChave) {
       palavrasDaBusca.forEach(palavra => {
-        if (textoPalavrasChave.includes(palavra)) relevanceScore++;
+        if (textoPalavrasChave.includes(palavra)) {
+          relevanceScore++;
+          console.log(`✅ ask-simple: Palavra "${palavra}" encontrada nas palavras-chave`);
+        }
       });
     }
     
     // Buscar na pergunta também
     palavrasDaBusca.forEach(palavra => {
-      if (textoPergunta.includes(palavra)) relevanceScore++;
+      if (textoPergunta.includes(palavra)) {
+        relevanceScore++;
+        console.log(`✅ ask-simple: Palavra "${palavra}" encontrada na pergunta`);
+      }
     });
     
     if (relevanceScore > 0) {
+      console.log(`🎯 ask-simple: Correspondência encontrada na linha ${i + 2} com score ${relevanceScore}`);
       todasAsCorrespondencias.push({
         resposta: linhaAtual[idxResposta],
         perguntaOriginal: linhaAtual[idxPergunta],
