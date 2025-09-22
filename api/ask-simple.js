@@ -196,32 +196,41 @@ module.exports = async function handler(req, res) {
 
     console.log('✅ ask-simple: Google Sheets configurado, testando acesso...');
     
-    // Buscar dados da planilha real
-    let faqData;
+    // Teste simples de busca de dados
     try {
-      console.log('🔍 ask-simple: Buscando dados da planilha real...');
+      console.log('🔍 ask-simple: Buscando dados da planilha...');
       console.log('🔍 ask-simple: ID da planilha:', SPREADSHEET_ID);
       console.log('🔍 ask-simple: Faixa:', FAQ_SHEET_NAME);
       
-      // Buscar dados com timeout de 5 segundos
-      faqData = await Promise.race([
-        (async () => {
-          const dataResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: SPREADSHEET_ID,
-            range: FAQ_SHEET_NAME,
-          });
-          
-          if (!dataResponse.data.values || dataResponse.data.values.length === 0) {
-            throw new Error("Planilha FAQ vazia ou não encontrada");
-          }
-          
-          console.log('✅ ask-simple: Dados obtidos:', dataResponse.data.values.length, 'linhas');
-          return dataResponse.data.values;
-        })(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout na busca da planilha (5s)')), 5000)
-        )
-      ]);
+      const dataResponse = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: FAQ_SHEET_NAME,
+      });
+      
+      console.log('✅ ask-simple: Resposta recebida:', dataResponse.data);
+      
+      if (!dataResponse.data.values || dataResponse.data.values.length === 0) {
+        return res.status(200).json({
+          status: "sucesso_vazio",
+          resposta: "Planilha FAQ vazia ou não encontrada",
+          source: "Sistema",
+          dados: dataResponse.data
+        });
+      }
+      
+      const faqData = dataResponse.data.values;
+      console.log('✅ ask-simple: Dados obtidos:', faqData.length, 'linhas');
+      console.log('✅ ask-simple: Primeira linha:', faqData[0]);
+      
+      // Retornar sucesso com dados
+      return res.status(200).json({
+        status: "sucesso_dados",
+        resposta: "Dados da planilha obtidos com sucesso!",
+        source: "Sistema",
+        totalLinhas: faqData.length,
+        primeiraLinha: faqData[0],
+        pergunta: pergunta
+      });
       
     } catch (error) {
       console.log('❌ ask-simple: Erro ao buscar dados:', error);
