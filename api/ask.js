@@ -17,14 +17,34 @@ const SHEETS_TIMEOUT_MS = 3000; // 3 segundos
 const OFFLINE_RESPONSE_TIMEOUT_MS = 2000; // 2 segundos para resposta offline
 
 // --- CLIENTE GOOGLE SHEETS ---
-const auth = new google.auth.GoogleAuth({
-  credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}'),
-  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-});
-const sheets = google.sheets({ version: 'v4', auth });
+let auth, sheets, openai;
+
+try {
+  // Verificar se as credenciais existem
+  if (!process.env.GOOGLE_CREDENTIALS) {
+    console.warn('⚠️ GOOGLE_CREDENTIALS não configurado');
+  } else {
+    auth = new google.auth.GoogleAuth({
+      credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+    sheets = google.sheets({ version: 'v4', auth });
+  }
+} catch (error) {
+  console.error('❌ Erro ao configurar Google Sheets:', error.message);
+}
 
 // --- CLIENTE OPENAI ---
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+try {
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn('⚠️ OPENAI_API_KEY não configurado');
+  } else {
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+} catch (error) {
+  console.error('❌ Erro ao configurar OpenAI:', error.message);
+}
+
 const modeloOpenAI = "gpt-4o-mini"; // Ajustável
 
 // --- MEMÓRIA DE SESSÃO POR USUÁRIO ---
@@ -50,16 +70,23 @@ let connectivityMonitor = {
 // --- FUNÇÕES DE DETECÇÃO DE LATÊNCIA E CACHE OFFLINE ---
 
 async function checkConnectivity() {
-  const now = Date.now();
-  
-  // Verificar se precisa fazer nova verificação
-  if (now - connectivityMonitor.lastCheck < connectivityMonitor.checkInterval) {
-    return offlineCache.isOnline;
-  }
-  
-  connectivityMonitor.lastCheck = now;
-  
   try {
+    const now = Date.now();
+    
+    // Verificar se precisa fazer nova verificação
+    if (now - connectivityMonitor.lastCheck < connectivityMonitor.checkInterval) {
+      return offlineCache.isOnline;
+    }
+    
+    connectivityMonitor.lastCheck = now;
+    
+    // Verificar se a API key existe
+    if (!process.env.OPENAI_API_KEY) {
+      console.log('⚠️ OpenAI API key não configurada');
+      offlineCache.isOnline = false;
+      return false;
+    }
+    
     // Teste rápido de conectividade com timeout
     const testPromise = Promise.race([
       axios.get('https://api.openai.com/v1/models', { 
@@ -78,9 +105,9 @@ async function checkConnectivity() {
     return true;
     
   } catch (error) {
+    console.log('❌ Erro na verificação de conectividade:', error.message);
     offlineCache.connectionFailures++;
     offlineCache.isOnline = false;
-    console.log(`❌ Conectividade verificada: OFFLINE (${offlineCache.connectionFailures} falhas)`);
     return false;
   }
 }
@@ -89,6 +116,10 @@ async function getFaqDataWithTimeout() {
   const startTime = Date.now();
   
   try {
+    if (!sheets) {
+      throw new Error('Google Sheets não configurado');
+    }
+    
     const response = await Promise.race([
       sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
@@ -193,6 +224,11 @@ function normalizarTexto(texto) {
 
 async function logIaUsage(email, pergunta) {
   try {
+    if (!sheets) {
+      console.warn('⚠️ Google Sheets não configurado - não é possível registrar uso da IA');
+      return;
+    }
+    
     const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
     const newRow = [timestamp, email, pergunta];
     await sheets.spreadsheets.values.append({
@@ -257,6 +293,10 @@ async function askOpenAI(pergunta, contextoPlanilha, email, historicoSessao = []
   const startTime = Date.now();
   
   try {
+    if (!openai) {
+      throw new Error('OpenAI não configurado');
+    }
+    
     const prompt = `
 ### PERSONA
 Você é o VeloBot, assistente oficial da Velotax. Responda com base no histórico de conversa, no contexto da planilha e nos sites autorizados.
@@ -342,10 +382,11 @@ module.exports = async function handler(req, res) {
 };
 
 async function processAskRequest(req, res) {
-  const { pergunta, email, reformular, usar_ia_avancada = 'true' } = req.query;
-  if (!pergunta) return res.status(400).json({ error: "Nenhuma pergunta fornecida." });
+  try {
+    const { pergunta, email, reformular, usar_ia_avancada = 'true' } = req.query;
+    if (!pergunta) return res.status(400).json({ error: "Nenhuma pergunta fornecida." });
 
-  console.log('🤖 Nova pergunta recebida:', { pergunta, email, usar_ia_avancada });
+    console.log('🤖 Nova pergunta recebida:', { pergunta, email, usar_ia_avancada });
 
   // --- SISTEMA DE FALLBACK AUTOMÁTICO DE 3 NÍVEIS ---
   
@@ -457,4 +498,14 @@ Sua pergunta foi: "${pergunta}"`;
     nivel: 3,
     aviso: 'Sistema em modo offline - conectividade limitada'
   });
+  
+  } catch (error) {
+    console.error('❌ Erro crítico em processAskRequest:', error);
+    return res.status(500).json({
+      status: "erro_critico",
+      resposta: "Desculpe, ocorreu um erro interno. Tente novamente em alguns instantes.",
+      source: "Sistema",
+      error: error.message
+    });
+  }
 }
