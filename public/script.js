@@ -420,8 +420,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 data.news.forEach(item => {
                     const newsItemDiv = document.createElement('div');
-                    newsItemDiv.className = `news-item ${item.tipo.toLowerCase().trim()}-alert`;
-                    newsItemDiv.innerHTML = `<h2>${item.titulo}</h2><small>Publicado em: ${item.publicadoEm}</small><p>${item.conteudo}</p>`;
+                    const tipo = item.tipo || 'info'; // Fallback para 'info' se tipo for undefined
+                    newsItemDiv.className = `news-item ${tipo.toLowerCase().trim()}-alert`;
+                    newsItemDiv.innerHTML = `<h2>${item.titulo || 'Sem título'}</h2><small>Publicado em: ${item.publicadoEm || 'Data não disponível'}</small><p>${item.conteudo || 'Conteúdo não disponível'}</p>`;
                     newsListContainer.appendChild(newsItemDiv);
                 });
             } catch (error) {
