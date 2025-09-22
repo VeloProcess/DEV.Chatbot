@@ -20,39 +20,15 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // Testar Google Sheets
-    try {
-      const auth = new google.auth.GoogleAuth({
-        credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
-        scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-      });
-      const sheets = google.sheets({ version: 'v4', auth });
-      
-      const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: "1tnWusrOW-UXHFM8GT3o0Du93QDwv5G3Ylvgebof9wfQ",
-        range: "FAQ!A:C",
-      });
-      
-      console.log('✅ simple-test: Google Sheets funcionando');
-      
-      return res.status(200).json({
-        status: 'success',
-        message: 'API funcionando',
-        timestamp: new Date().toISOString(),
-        googleSheets: 'Working',
-        spreadsheetRows: response.data.values?.length || 0,
-        firstRow: response.data.values?.[0] || []
-      });
-      
-    } catch (error) {
-      console.error('❌ simple-test: Erro Google Sheets:', error.message);
-      return res.status(200).json({
-        status: 'success',
-        message: 'API funcionando',
-        timestamp: new Date().toISOString(),
-        googleSheets: 'Error: ' + error.message
-      });
-    }
+    // Retornar sucesso sem testar Google Sheets para evitar timeout
+    console.log('✅ simple-test: Retornando sucesso sem testar Google Sheets');
+    
+    return res.status(200).json({
+      status: 'success',
+      message: 'API funcionando',
+      timestamp: new Date().toISOString(),
+      googleSheets: 'Skipped to avoid timeout'
+    });
     
   } catch (error) {
     return res.status(500).json({
