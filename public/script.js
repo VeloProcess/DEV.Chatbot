@@ -274,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!profileResponse.ok) throw new Error('Falha ao buscar perfil do usuário.');
                 
                 const userProfile = await profileResponse.json();
+                console.log('🔍 Perfil do usuário obtido:', userProfile);
 
                 dadosAtendente = {
                     nome: user.name,
@@ -281,6 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     timestamp: Date.now(),
                     funcao: userProfile.funcao
                 };
+                console.log('🔍 dadosAtendente definido:', dadosAtendente);
 
                 localStorage.setItem('dadosAtendenteChatbot', JSON.stringify(dadosAtendente));
                 
