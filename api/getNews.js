@@ -6,11 +6,21 @@ const SPREADSHEET_ID = "1tnWusrOW-UXHFM8GT3o0Du93QDwv5G3Ylvgebof9wfQ";
 const NEWS_SHEET_NAME = "Noticias!A:D";
 const CACHE_DURATION_SECONDS = 180; // Cache de 3 minutos
 
-const auth = new google.auth.GoogleAuth({
-  credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}'),
-  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-});
-const sheets = google.sheets({ version: 'v4', auth });
+let auth, sheets;
+
+try {
+  if (!process.env.GOOGLE_CREDENTIALS) {
+    console.warn('⚠️ GOOGLE_CREDENTIALS não configurado no getNews');
+  } else {
+    auth = new google.auth.GoogleAuth({
+      credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    });
+    sheets = google.sheets({ version: 'v4', auth });
+  }
+} catch (error) {
+  console.error('❌ Erro ao configurar Google Sheets no getNews:', error.message);
+}
 
 let cache = { timestamp: null, data: null };
 
@@ -19,8 +29,8 @@ module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', `s-maxage=${CACHE_DURATION_SECONDS}, stale-while-revalidate`);
 
   // Verificar se as credenciais estão disponíveis
-  if (!process.env.GOOGLE_CREDENTIALS) {
-    console.error("GOOGLE_CREDENTIALS não configurado");
+  if (!process.env.GOOGLE_CREDENTIALS || !sheets) {
+    console.error("GOOGLE_CREDENTIALS não configurado ou sheets não inicializado");
     return res.status(200).json({ 
       news: [],
       error: "Configuração de credenciais não encontrada."
