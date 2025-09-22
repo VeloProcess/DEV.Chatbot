@@ -668,7 +668,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!textoDaPergunta.trim()) return;
             showTypingIndicator();
             try {
-                const url = `/api/ask?pergunta=${encodeURIComponent(textoDaPergunta)}&email=${encodeURIComponent(dadosAtendente.email)}&usar_ia_avancada=true`;
+                // Testar endpoint simplificado primeiro
+                const url = `/api/ask-simple?pergunta=${encodeURIComponent(textoDaPergunta)}&email=${encodeURIComponent(dadosAtendente.email)}&usar_ia_avancada=true`;
+                console.log('🔍 Testando endpoint simplificado:', url);
                 const response = await fetch(url);
                 hideTypingIndicator();
                 if (!response.ok) throw new Error(`Erro de rede ou API: ${response.status}`);
