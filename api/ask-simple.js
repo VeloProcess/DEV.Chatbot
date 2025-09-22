@@ -3,7 +3,7 @@ const { google } = require('googleapis');
 
 // Configuração do Google Sheets
 const SPREADSHEET_ID = "1tnWusrOW-UXHFM8GT3o0Du93QDwv5G3Ylvgebof9wfQ";
-const FAQ_SHEET_NAME = "FAQ!A:D";
+const FAQ_SHEET_NAME = "FAQ!A:Z";
 
 // Cliente Google Sheets
 let auth, sheets;
@@ -40,6 +40,11 @@ async function getFaqData() {
     }
     
     console.log('✅ ask-simple: Dados da planilha obtidos com sucesso');
+    console.log('📊 ask-simple: Estrutura da planilha:', {
+      totalLinhas: response.data.values.length,
+      primeiraLinha: response.data.values[0],
+      totalColunas: response.data.values[0]?.length || 0
+    });
     return response.data.values;
   } catch (error) {
     console.error('❌ ask-simple: Erro ao buscar planilha:', error.message);
@@ -55,14 +60,35 @@ function normalizarTexto(texto) {
 
 // Função para buscar correspondências
 function findMatches(pergunta, faqData) {
+  console.log('🔍 ask-simple: Iniciando busca de correspondências...');
+  console.log('📊 ask-simple: Dados recebidos:', {
+    totalLinhas: faqData.length,
+    cabecalho: faqData[0]
+  });
+
   const cabecalho = faqData[0];
   const dados = faqData.slice(1);
-  const idxPergunta = cabecalho.indexOf("Pergunta");
-  const idxPalavrasChave = cabecalho.indexOf("Palavras-chave");
-  const idxResposta = cabecalho.indexOf("Resposta");
+  
+  // Buscar colunas de forma mais flexível
+  const idxPergunta = cabecalho.findIndex(col => 
+    col && col.toLowerCase().includes('pergunta')
+  );
+  const idxPalavrasChave = cabecalho.findIndex(col => 
+    col && (col.toLowerCase().includes('palavra') || col.toLowerCase().includes('chave'))
+  );
+  const idxResposta = cabecalho.findIndex(col => 
+    col && col.toLowerCase().includes('resposta')
+  );
 
-  if (idxPergunta === -1 || idxResposta === -1 || idxPalavrasChave === -1) {
-    throw new Error("Colunas essenciais não encontradas na planilha");
+  console.log('🔍 ask-simple: Índices encontrados:', {
+    pergunta: idxPergunta,
+    palavrasChave: idxPalavrasChave,
+    resposta: idxResposta
+  });
+
+  if (idxPergunta === -1 || idxResposta === -1) {
+    console.log('⚠️ ask-simple: Colunas essenciais não encontradas, usando fallback');
+    return [];
   }
 
   const palavrasDaBusca = normalizarTexto(pergunta).split(' ').filter(p => p.length > 2);
@@ -70,11 +96,21 @@ function findMatches(pergunta, faqData) {
 
   for (let i = 0; i < dados.length; i++) {
     const linhaAtual = dados[i];
-    const textoPalavrasChave = normalizarTexto(linhaAtual[idxPalavrasChave] || '');
+    const textoPalavrasChave = idxPalavrasChave !== -1 ? 
+      normalizarTexto(linhaAtual[idxPalavrasChave] || '') : '';
+    const textoPergunta = normalizarTexto(linhaAtual[idxPergunta] || '');
     let relevanceScore = 0;
     
+    // Buscar nas palavras-chave se existir
+    if (textoPalavrasChave) {
+      palavrasDaBusca.forEach(palavra => {
+        if (textoPalavrasChave.includes(palavra)) relevanceScore++;
+      });
+    }
+    
+    // Buscar na pergunta também
     palavrasDaBusca.forEach(palavra => {
-      if (textoPalavrasChave.includes(palavra)) relevanceScore++;
+      if (textoPergunta.includes(palavra)) relevanceScore++;
     });
     
     if (relevanceScore > 0) {
