@@ -245,7 +245,7 @@ async function getUserProfileData(email) {
     console.log('📊 getUserProfile: Dados da planilha obtidos:', rows.length, 'linhas');
     
     // Verificar se o email é de admin baseado no domínio e nome
-    const isAdminEmail = email.includes('gabriel.araujo') || email.includes('admin') || email.includes('diretor');
+    const isAdminEmail = email.includes('gabriel.araujo') || email.includes('admin') || email.includes('diretor') || email.includes('velotax');
     
     if (isAdminEmail) {
       console.log('✅ getUserProfile: Usuário identificado como admin');
