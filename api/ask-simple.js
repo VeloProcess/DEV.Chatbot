@@ -3,7 +3,7 @@ const { google } = require('googleapis');
 
 // Configuração do Google Sheets
 const SPREADSHEET_ID = "1tnWusrOW-UXHFM8GT3o0Du93QDwv5G3Ylvgebof9wfQ";
-const FAQ_SHEET_NAME = "FAQ!A:C";
+const FAQ_SHEET_NAME = "FAQ!A:D";
 
 // Cliente Google Sheets
 let auth, sheets;
@@ -73,6 +73,7 @@ function findMatches(pergunta, faqData) {
   const idxPergunta = 0; // Coluna A
   const idxResposta = 1; // Coluna B
   const idxPalavrasChave = 2; // Coluna C
+  const idxTabulacoes = 3; // Coluna D
 
   console.log('🔍 ask-simple: Índices encontrados:', {
     pergunta: idxPergunta,
@@ -141,7 +142,7 @@ function findMatches(pergunta, faqData) {
         perguntaOriginal: linhaAtual[idxPergunta],
         sourceRow: i + 2,
         score: relevanceScore,
-        tabulacoes: linhaAtual[3] || null
+        tabulacoes: linhaAtual[idxTabulacoes] || null
       });
     }
   }
