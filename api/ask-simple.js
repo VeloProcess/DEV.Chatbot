@@ -76,8 +76,19 @@ async function getFaqData() {
       return cacheData;
     }
     
-    // Se não tem cache, tentar buscar dados básicos da planilha
-    throw new Error('Não foi possível acessar a planilha e não há cache disponível');
+    // Se não tem cache, criar dados mínimos para evitar erro
+    console.log('⚠️ ask-simple: Criando dados mínimos para evitar erro');
+    const dadosMinimos = [
+      ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
+      ['Erro de conexão', 'Sistema temporariamente indisponível. Tente novamente em alguns instantes.', 'erro, conexão, indisponível', ''],
+      ['Não encontrado', 'Informação não encontrada na base de dados.', 'não encontrado, sem informações', ''],
+      ['Múltiplas opções', 'Encontrei várias opções. Escolha uma das opções abaixo:', 'múltiplas opções, várias opções', '']
+    ];
+    
+    cacheData = dadosMinimos;
+    lastUpdate = Date.now();
+    
+    return cacheData;
   }
 }
 
@@ -89,6 +100,12 @@ function normalizarTexto(texto) {
 
 // Função para buscar mensagens especiais na planilha
 function buscarMensagemEspecial(faqData, tipo) {
+  // Verificar se faqData é válido
+  if (!faqData || !Array.isArray(faqData) || faqData.length < 2) {
+    console.log('⚠️ ask-simple: faqData inválido na busca de mensagem especial');
+    return null;
+  }
+  
   const tipos = {
     'nao_encontrado': ['não encontrado', 'nao encontrado', 'sem informações', 'não localizado'],
     'erro_sistema': ['erro interno', 'erro sistema', 'erro crítico'],
@@ -99,6 +116,8 @@ function buscarMensagemEspecial(faqData, tipo) {
   
   for (let i = 1; i < faqData.length; i++) {
     const linha = faqData[i];
+    if (!linha || !Array.isArray(linha)) continue;
+    
     const pergunta = (linha[0] || '').toLowerCase();
     const palavrasChaveLinha = (linha[2] || '').toLowerCase();
     
@@ -118,6 +137,13 @@ function buscarMensagemEspecial(faqData, tipo) {
 // Função para buscar correspondências
 function findMatches(pergunta, faqData) {
   console.log('🔍 ask-simple: Iniciando busca de correspondências...');
+  
+  // Verificar se faqData é válido
+  if (!faqData || !Array.isArray(faqData) || faqData.length < 2) {
+    console.log('⚠️ ask-simple: faqData inválido na busca de correspondências');
+    return [];
+  }
+  
   console.log('📊 ask-simple: Dados recebidos:', {
     totalLinhas: faqData.length,
     cabecalho: faqData[0]
@@ -234,24 +260,50 @@ function findMatches(pergunta, faqData) {
 // Função para inicializar cache em background
 async function initializeCache() {
   if (!sheets) {
-    console.log('⚠️ ask-simple: Google Sheets não configurado, pulando inicialização do cache');
+    console.log('⚠️ ask-simple: Google Sheets não configurado, criando dados mínimos');
+    // Criar dados mínimos mesmo sem Google Sheets
+    cacheData = [
+      ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
+      ['Erro de conexão', 'Sistema temporariamente indisponível. Tente novamente em alguns instantes.', 'erro, conexão, indisponível', ''],
+      ['Não encontrado', 'Informação não encontrada na base de dados.', 'não encontrado, sem informações', ''],
+      ['Múltiplas opções', 'Encontrei várias opções. Escolha uma das opções abaixo:', 'múltiplas opções, várias opções', '']
+    ];
+    lastUpdate = Date.now();
     return;
   }
   
   try {
     console.log('🚀 ask-simple: Inicializando cache em background...');
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: FAQ_SHEET_NAME,
-    });
+    
+    // Timeout de 5 segundos para inicialização
+    const response = await Promise.race([
+      sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: FAQ_SHEET_NAME,
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout na inicialização')), 5000)
+      )
+    ]);
     
     if (response.data.values && response.data.values.length > 0) {
       cacheData = response.data.values;
       lastUpdate = Date.now();
       console.log('✅ ask-simple: Cache inicializado com', cacheData.length, 'linhas');
+    } else {
+      throw new Error('Planilha vazia');
     }
   } catch (error) {
     console.log('⚠️ ask-simple: Erro ao inicializar cache:', error.message);
+    // Criar dados mínimos em caso de erro
+    cacheData = [
+      ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
+      ['Erro de conexão', 'Sistema temporariamente indisponível. Tente novamente em alguns instantes.', 'erro, conexão, indisponível', ''],
+      ['Não encontrado', 'Informação não encontrada na base de dados.', 'não encontrado, sem informações', ''],
+      ['Múltiplas opções', 'Encontrei várias opções. Escolha uma das opções abaixo:', 'múltiplas opções, várias opções', '']
+    ];
+    lastUpdate = Date.now();
+    console.log('📦 ask-simple: Dados mínimos criados como fallback');
   }
 }
 
