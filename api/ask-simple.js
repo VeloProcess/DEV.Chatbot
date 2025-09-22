@@ -181,10 +181,25 @@ module.exports = async function handler(req, res) {
 
     console.log('🔍 ask-simple: Pergunta recebida:', { pergunta, email, usar_ia_avancada });
 
+    // Teste básico de conexão primeiro
+    console.log('🔍 ask-simple: Testando conexão básica...');
+    
+    if (!sheets) {
+      console.log('❌ ask-simple: Google Sheets não configurado');
+      return res.status(500).json({
+        status: "erro_configuracao",
+        resposta: "Google Sheets não configurado. Verifique as credenciais.",
+        source: "Sistema",
+        error: "Google Sheets não configurado"
+      });
+    }
+
     // Buscar dados da planilha real com timeout
     let faqData;
     try {
       console.log('🔍 ask-simple: Tentando buscar dados da planilha real...');
+      console.log('🔍 ask-simple: ID da planilha:', SPREADSHEET_ID);
+      console.log('🔍 ask-simple: Faixa:', FAQ_SHEET_NAME);
       
       // Adicionar timeout de 5 segundos para evitar 504
       faqData = await Promise.race([
