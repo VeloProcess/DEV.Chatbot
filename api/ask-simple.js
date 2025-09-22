@@ -196,40 +196,25 @@ module.exports = async function handler(req, res) {
 
     console.log('✅ ask-simple: Google Sheets configurado, testando acesso...');
     
-    // Buscar dados da planilha com timeout agressivo
-    let faqData;
+    // Teste básico de conexão apenas
     try {
-      console.log('🔍 ask-simple: Testando acesso à planilha...');
+      console.log('🔍 ask-simple: Testando acesso básico à planilha...');
       console.log('🔍 ask-simple: ID da planilha:', SPREADSHEET_ID);
-      console.log('🔍 ask-simple: Faixa:', FAQ_SHEET_NAME);
       
-      // Timeout de 3 segundos para evitar 504
-      faqData = await Promise.race([
-        (async () => {
-          // Teste básico de acesso
-          const response = await sheets.spreadsheets.get({
-            spreadsheetId: SPREADSHEET_ID,
-          });
-          
-          console.log('✅ ask-simple: Acesso à planilha OK:', response.data.properties?.title);
-          
-          // Agora buscar os dados
-          const dataResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: SPREADSHEET_ID,
-            range: FAQ_SHEET_NAME,
-          });
-          
-          if (!dataResponse.data.values || dataResponse.data.values.length === 0) {
-            throw new Error("Planilha FAQ vazia ou não encontrada");
-          }
-          
-          console.log('✅ ask-simple: Dados obtidos:', dataResponse.data.values.length, 'linhas');
-          return dataResponse.data.values;
-        })(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout na busca da planilha (3s)')), 3000)
-        )
-      ]);
+      // Apenas testar se consegue acessar a planilha
+      const response = await sheets.spreadsheets.get({
+        spreadsheetId: SPREADSHEET_ID,
+      });
+      
+      console.log('✅ ask-simple: Acesso à planilha OK:', response.data.properties?.title);
+      
+      // Retornar sucesso sem buscar dados por enquanto
+      return res.status(200).json({
+        status: "sucesso_teste",
+        resposta: "Conexão com Google Sheets funcionando! Título da planilha: " + response.data.properties?.title,
+        source: "Sistema",
+        planilha: response.data.properties?.title
+      });
       
     } catch (error) {
       console.log('❌ ask-simple: Erro detalhado:', error);
