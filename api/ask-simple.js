@@ -102,23 +102,37 @@ function findMatches(pergunta, faqData) {
       textoPalavrasChaveNormalizado: textoPalavrasChave
     });
     
-    // Buscar nas palavras-chave se existir
+    // Buscar nas palavras-chave (prioridade alta)
     if (textoPalavrasChave) {
       palavrasDaBusca.forEach(palavra => {
         if (textoPalavrasChave.includes(palavra)) {
-          relevanceScore++;
-          console.log(`✅ ask-simple: Palavra "${palavra}" encontrada nas palavras-chave`);
+          relevanceScore += 2; // Peso maior para palavras-chave
+          console.log(`✅ ask-simple: Palavra "${palavra}" encontrada nas palavras-chave (peso 2)`);
         }
       });
     }
     
-    // Buscar na pergunta também
+    // Buscar na pergunta (prioridade menor)
     palavrasDaBusca.forEach(palavra => {
       if (textoPergunta.includes(palavra)) {
-        relevanceScore++;
-        console.log(`✅ ask-simple: Palavra "${palavra}" encontrada na pergunta`);
+        relevanceScore += 1; // Peso menor para pergunta
+        console.log(`✅ ask-simple: Palavra "${palavra}" encontrada na pergunta (peso 1)`);
       }
     });
+    
+    // Busca mais flexível - verificar se a pergunta contém parte do texto
+    const perguntaOriginal = linhaAtual[idxPergunta] || '';
+    if (perguntaOriginal.toLowerCase().includes(pergunta.toLowerCase())) {
+      relevanceScore += 3; // Peso alto para correspondência exata
+      console.log(`🎯 ask-simple: Correspondência exata encontrada na pergunta: "${perguntaOriginal}"`);
+    }
+    
+    // Busca nas palavras-chave com correspondência parcial
+    const palavrasChaveOriginal = linhaAtual[idxPalavrasChave] || '';
+    if (palavrasChaveOriginal.toLowerCase().includes(pergunta.toLowerCase())) {
+      relevanceScore += 3; // Peso alto para correspondência exata
+      console.log(`🎯 ask-simple: Correspondência exata encontrada nas palavras-chave: "${palavrasChaveOriginal}"`);
+    }
     
     if (relevanceScore > 0) {
       console.log(`🎯 ask-simple: Correspondência encontrada na linha ${i + 2} com score ${relevanceScore}`);
