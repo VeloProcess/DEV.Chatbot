@@ -196,28 +196,35 @@ module.exports = async function handler(req, res) {
 
     console.log('✅ ask-simple: Google Sheets configurado, testando acesso...');
     
-    // Teste básico de conexão apenas
+    // Buscar dados da planilha real
+    let faqData;
     try {
-      console.log('🔍 ask-simple: Testando acesso básico à planilha...');
+      console.log('🔍 ask-simple: Buscando dados da planilha real...');
       console.log('🔍 ask-simple: ID da planilha:', SPREADSHEET_ID);
+      console.log('🔍 ask-simple: Faixa:', FAQ_SHEET_NAME);
       
-      // Apenas testar se consegue acessar a planilha
-      const response = await sheets.spreadsheets.get({
-        spreadsheetId: SPREADSHEET_ID,
-      });
-      
-      console.log('✅ ask-simple: Acesso à planilha OK:', response.data.properties?.title);
-      
-      // Retornar sucesso sem buscar dados por enquanto
-      return res.status(200).json({
-        status: "sucesso_teste",
-        resposta: "Conexão com Google Sheets funcionando! Título da planilha: " + response.data.properties?.title,
-        source: "Sistema",
-        planilha: response.data.properties?.title
-      });
+      // Buscar dados com timeout de 5 segundos
+      faqData = await Promise.race([
+        (async () => {
+          const dataResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: FAQ_SHEET_NAME,
+          });
+          
+          if (!dataResponse.data.values || dataResponse.data.values.length === 0) {
+            throw new Error("Planilha FAQ vazia ou não encontrada");
+          }
+          
+          console.log('✅ ask-simple: Dados obtidos:', dataResponse.data.values.length, 'linhas');
+          return dataResponse.data.values;
+        })(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout na busca da planilha (5s)')), 5000)
+        )
+      ]);
       
     } catch (error) {
-      console.log('❌ ask-simple: Erro detalhado:', error);
+      console.log('❌ ask-simple: Erro ao buscar dados:', error);
       console.log('❌ ask-simple: Código do erro:', error.code);
       console.log('❌ ask-simple: Status do erro:', error.status);
       console.log('❌ ask-simple: Mensagem do erro:', error.message);
