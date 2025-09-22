@@ -671,8 +671,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!textoDaPergunta.trim()) return;
             showTypingIndicator();
             try {
-        // Usar test-simple temporariamente (sem Google Sheets)
-        const url = `/api/test-simple?pergunta=${encodeURIComponent(textoDaPergunta)}&email=${encodeURIComponent(dadosAtendente.email)}`;
+        // Usar MongoDB endpoint como principal
+        const url = `/api/ask-mongodb?pergunta=${encodeURIComponent(textoDaPergunta)}&email=${encodeURIComponent(dadosAtendente.email)}`;
                 console.log('🔍 Buscando resposta:', url);
                 const response = await fetch(url);
                 hideTypingIndicator();

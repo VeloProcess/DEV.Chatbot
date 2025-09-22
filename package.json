@@ -18,6 +18,7 @@
     "express": "^5.1.0",
     "form-data": "^4.0.0",
     "googleapis": "^154.1.0",
+    "mongodb": "^6.20.0",
     "openai": "^5.20.1"
   }
 }

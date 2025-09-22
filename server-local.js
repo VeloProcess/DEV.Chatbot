@@ -20,6 +20,7 @@ const express = require('express');
 const path = require('path');
 const askHandler = require('./api/ask');
 const askSimpleHandler = require('./api/ask-simple');
+const askMongoHandler = require('./api/ask-mongodb');
 const adminHandler = require('./api/admin');
 const logQuestionHandler = require('./api/logQuestion');
 const getNewsHandler = require('./api/getNews');
@@ -49,6 +50,11 @@ app.get('/api/ask', (req, res) => {
 app.get('/api/ask-simple', (req, res) => {
   console.log('🔍 Local: /api/ask-simple chamado');
   askSimpleHandler(req, res);
+});
+
+app.get('/api/ask-mongodb', (req, res) => {
+  console.log('🔍 Local: /api/ask-mongodb chamado');
+  askMongoHandler(req, res);
 });
 
 app.get('/api/admin', (req, res) => {
@@ -86,6 +92,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Servidor local rodando em http://localhost:${PORT}`);
   console.log(`📊 Teste as APIs:`);
   console.log(`   - http://localhost:${PORT}/api/ask-simple?pergunta=Pix&email=teste@teste.com`);
+  console.log(`   - http://localhost:${PORT}/api/ask-mongodb?pergunta=Pix&email=teste@teste.com`);
   console.log(`   - http://localhost:${PORT}/api/admin?action=getUserProfile&email=gabriel.araujo@velotax.com.br`);
   console.log(`   - http://localhost:${PORT}/api/ask?pergunta=Pix&email=teste@teste.com`);
 });
