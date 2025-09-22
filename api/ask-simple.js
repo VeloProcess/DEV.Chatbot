@@ -3,7 +3,7 @@ const { google } = require('googleapis');
 
 // Configuração do Google Sheets
 const SPREADSHEET_ID = "1tnWusrOW-UXHFM8GT3o0Du93QDwv5G3Ylvgebof9wfQ";
-const FAQ_SHEET_NAME = "Perguntas_Frequentes!A:D";
+const FAQ_SHEET_NAME = "FAQ!A:D";
 
 // Cliente Google Sheets
 let auth, sheets;
