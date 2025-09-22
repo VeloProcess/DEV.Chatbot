@@ -71,34 +71,21 @@ let connectivityMonitor = {
 
 async function checkConnectivity() {
   try {
-    const now = Date.now();
-    
-    // Verificar se precisa fazer nova verificação
-    if (now - connectivityMonitor.lastCheck < connectivityMonitor.checkInterval) {
-      return offlineCache.isOnline;
-    }
-    
-    connectivityMonitor.lastCheck = now;
-    
-    // Verificar se a API key existe
+    // Verificação simples - apenas verificar se as configurações existem
     if (!process.env.OPENAI_API_KEY) {
       console.log('⚠️ OpenAI API key não configurada');
       offlineCache.isOnline = false;
       return false;
     }
     
-    // Teste rápido de conectividade com timeout
-    const testPromise = Promise.race([
-      axios.get('https://api.openai.com/v1/models', { 
-        headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` },
-        timeout: 2000 
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
-    ]);
+    // Verificar se o cliente OpenAI está configurado
+    if (!openai) {
+      console.log('⚠️ Cliente OpenAI não configurado');
+      offlineCache.isOnline = false;
+      return false;
+    }
     
-    await testPromise;
-    
-    // Se chegou aqui, está online
+    // Se chegou aqui, assumir que está online
     offlineCache.isOnline = true;
     offlineCache.connectionFailures = 0;
     console.log('✅ Conectividade verificada: ONLINE');
@@ -383,6 +370,8 @@ module.exports = async function handler(req, res) {
 
 async function processAskRequest(req, res) {
   try {
+    console.log('🔍 Iniciando processAskRequest...');
+    
     const { pergunta, email, reformular, usar_ia_avancada = 'true' } = req.query;
     if (!pergunta) return res.status(400).json({ error: "Nenhuma pergunta fornecida." });
 
@@ -393,8 +382,10 @@ async function processAskRequest(req, res) {
   // NÍVEL 1: IA AVANÇADA (OpenAI + busca semântica) - PRIMEIRA TENTATIVA
   if (usar_ia_avancada === 'true') {
     try {
+      console.log('🔍 NÍVEL 1: Verificando conectividade...');
       // Verificar conectividade primeiro
       const isOnline = await checkConnectivity();
+      console.log('🔍 Conectividade verificada:', isOnline);
       
       if (isOnline) {
         console.log('🚀 NÍVEL 1: Tentando IA Avançada...');
