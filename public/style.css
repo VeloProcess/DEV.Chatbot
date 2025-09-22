@@ -289,6 +289,78 @@ body.dark-theme #feedback-cancel {
     animation: pulse 2s infinite;
 }
 
+/* --- 📶 INDICADOR DE CONECTIVIDADE --- */
+.connectivity-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.connectivity-indicator:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+#wifi-icon {
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+#connectivity-text {
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* Estados do indicador de conectividade */
+.connectivity-indicator.online {
+    color: #4CAF50;
+}
+
+.connectivity-indicator.online #wifi-icon {
+    color: #4CAF50;
+}
+
+.connectivity-indicator.offline {
+    color: #FF9800;
+}
+
+.connectivity-indicator.offline #wifi-icon {
+    color: #FF9800;
+}
+
+.connectivity-indicator.no-connection {
+    color: #f44336;
+}
+
+.connectivity-indicator.no-connection #wifi-icon {
+    color: #f44336;
+}
+
+.connectivity-indicator.weak-signal {
+    color: #FF9800;
+}
+
+.connectivity-indicator.weak-signal #wifi-icon {
+    color: #FF9800;
+}
+
+/* Animação de pulso para indicador offline */
+.connectivity-indicator.offline #wifi-icon,
+.connectivity-indicator.no-connection #wifi-icon {
+    animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 #theme-switcher {
     position: absolute;
     top: var(--espaco-md);

@@ -40,12 +40,117 @@ document.addEventListener('DOMContentLoaded', () => {
     let dadosAtendente = null;
     let tokenClient = null;
     let sessionId = generateUUID();
+    let connectivityStatus = 'online'; // online, offline, weak-signal, no-connection
 
     // Função para gerar UUID
     function generateUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
+        });
+    }
+
+    // ================== FUNÇÕES DE CONECTIVIDADE ==================
+    
+    function updateConnectivityIndicator(status, data = null) {
+        const indicator = document.getElementById('connectivity-indicator');
+        const wifiIcon = document.getElementById('wifi-icon');
+        const connectivityText = document.getElementById('connectivity-text');
+        
+        if (!indicator || !wifiIcon || !connectivityText) return;
+        
+        // Remover classes anteriores
+        indicator.className = 'connectivity-indicator';
+        
+        // Determinar status baseado na resposta da API
+        let newStatus = 'online';
+        let iconClass = 'bx-wifi';
+        let text = 'Conectado';
+        
+        if (data) {
+            // Verificar se a resposta indica modo offline
+            if (data.modo === 'offline' || data.nivel === 2 || data.nivel === 3) {
+                if (data.nivel === 3) {
+                    newStatus = 'no-connection';
+                    iconClass = 'bx-wifi-slash';
+                    text = 'Sem conexão';
+                } else if (data.nivel === 2) {
+                    newStatus = 'offline';
+                    iconClass = 'bx-wifi-1';
+                    text = 'Modo offline';
+                }
+            } else if (data.modo === 'online' && data.nivel === 1) {
+                newStatus = 'online';
+                iconClass = 'bx-wifi';
+                text = 'Conectado';
+            }
+        } else if (status === 'error' || status === 'timeout') {
+            newStatus = 'weak-signal';
+            iconClass = 'bx-wifi-2';
+            text = 'Conexão instável';
+        } else if (status === 'offline') {
+            newStatus = 'offline';
+            iconClass = 'bx-wifi-1';
+            text = 'Modo offline';
+        } else if (status === 'no-connection') {
+            newStatus = 'no-connection';
+            iconClass = 'bx-wifi-slash';
+            text = 'Sem conexão';
+        }
+        
+        // Atualizar elementos
+        indicator.classList.add(newStatus);
+        wifiIcon.className = `bx ${iconClass}`;
+        connectivityText.textContent = text;
+        
+        // Atualizar status global
+        connectivityStatus = newStatus;
+        
+        console.log(`📶 Status de conectividade atualizado: ${newStatus} (${text})`);
+    }
+
+    // Função para verificar conectividade periodicamente
+    async function checkConnectivity() {
+        try {
+            const response = await fetch('/api/ask?pergunta=teste&email=teste@velotax.com.br&usar_ia_avancada=false', {
+                method: 'GET',
+                signal: AbortSignal.timeout(3000) // 3 segundos de timeout
+            });
+            
+            if (response.ok) {
+                updateConnectivityIndicator('online');
+            } else {
+                updateConnectivityIndicator('weak-signal');
+            }
+        } catch (error) {
+            if (error.name === 'TimeoutError') {
+                updateConnectivityIndicator('timeout');
+            } else {
+                updateConnectivityIndicator('no-connection');
+            }
+        }
+    }
+
+    // Inicializar indicador de conectividade
+    function initializeConnectivityIndicator() {
+        // Verificar conectividade inicial
+        checkConnectivity();
+        
+        // Verificar conectividade a cada 30 segundos
+        setInterval(checkConnectivity, 30000);
+        
+        // Verificar conectividade quando a janela ganha foco
+        window.addEventListener('focus', checkConnectivity);
+        
+        // Verificar conectividade quando a conexão é restaurada
+        window.addEventListener('online', () => {
+            updateConnectivityIndicator('online');
+            checkConnectivity();
+        });
+        
+        // Verificar conectividade quando a conexão é perdida
+        window.addEventListener('offline', () => {
+            updateConnectivityIndicator('no-connection');
         });
     }
 
@@ -565,6 +670,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 console.log('🤖 Resposta da IA:', data);
+                
+                // Atualizar indicador de conectividade baseado na resposta
+                updateConnectivityIndicator('success', data);
 
                 // Processar resposta da IA Avançada
                 if (data.status === 'sucesso_ia_avancada') {
@@ -612,6 +720,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (error) {
                 hideTypingIndicator();
+                
+                // Atualizar indicador de conectividade para erro
+                if (error.message.includes('timeout') || error.message.includes('Timeout')) {
+                    updateConnectivityIndicator('timeout');
+                } else if (error.message.includes('rede') || error.message.includes('network')) {
+                    updateConnectivityIndicator('no-connection');
+                } else {
+                    updateConnectivityIndicator('error');
+                }
+                
                 addMessage("Erro de conexão com o backend. Aguarde um instante que estamos verificando o ocorrido", 'bot', { sourceRow: 'Erro de Conexão' });
                 console.error("Detalhes do erro:", error);
             }
@@ -1403,6 +1521,9 @@ if (feedbackSendBtn) {
         setTimeout(() => {
             toggleAdminButton();
         }, 1000); // Aguardar 1 segundo para garantir que o DOM esteja pronto
+        
+        // Inicializar indicador de conectividade
+        initializeConnectivityIndicator();
     }
 
     // Inicia todo o processo de autenticação

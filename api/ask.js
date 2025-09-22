@@ -1,4 +1,4 @@
-// api/ask.js (Versão OpenAI Completa – Memória de Sessão e Busca em Sites + IA Avançada)
+// api/ask.js (Versão OpenAI Completa – Memória de Sessão e Busca em Sites + IA Avançada + Sistema Offline)
 
 const { google } = require('googleapis');
 const axios = require('axios');
@@ -8,7 +8,13 @@ const { processarComIA } = require('./ai-advanced');
 // --- CONFIGURAÇÃO ---
 const SPREADSHEET_ID = "1tnWusrOW-UXHFM8GT3o0Du93QDwv5G3Ylvgebof9wfQ";
 const FAQ_SHEET_NAME = "FAQ!A:D";
-const CACHE_DURATION_SECONDS = 0; // Desativado para sempre buscar atualizado
+const CACHE_DURATION_SECONDS = 300; // 5 minutos para cache local
+const SYNC_INTERVAL_MS = 300000; // 5 minutos para sincronização
+
+// --- CONFIGURAÇÕES DE TIMEOUT ---
+const OPENAI_TIMEOUT_MS = 5000; // 5 segundos
+const SHEETS_TIMEOUT_MS = 3000; // 3 segundos
+const OFFLINE_RESPONSE_TIMEOUT_MS = 2000; // 2 segundos para resposta offline
 
 // --- CLIENTE GOOGLE SHEETS ---
 const auth = new google.auth.GoogleAuth({
@@ -23,6 +29,150 @@ const modeloOpenAI = "gpt-4o-mini"; // Ajustável
 
 // --- MEMÓRIA DE SESSÃO POR USUÁRIO ---
 let userSessions = {}; // { email: { contexto: "", ultimaPergunta: "" } }
+
+// --- SISTEMA DE CACHE OFFLINE ---
+let offlineCache = {
+  faqData: null,
+  lastSync: 0,
+  embeddings: new Map(),
+  isOnline: true,
+  connectionFailures: 0
+};
+
+// --- MONITORAMENTO DE CONECTIVIDADE ---
+let connectivityMonitor = {
+  openaiLatency: [],
+  sheetsLatency: [],
+  lastCheck: 0,
+  checkInterval: 30000 // 30 segundos
+};
+
+// --- FUNÇÕES DE DETECÇÃO DE LATÊNCIA E CACHE OFFLINE ---
+
+async function checkConnectivity() {
+  const now = Date.now();
+  
+  // Verificar se precisa fazer nova verificação
+  if (now - connectivityMonitor.lastCheck < connectivityMonitor.checkInterval) {
+    return offlineCache.isOnline;
+  }
+  
+  connectivityMonitor.lastCheck = now;
+  
+  try {
+    // Teste rápido de conectividade com timeout
+    const testPromise = Promise.race([
+      axios.get('https://api.openai.com/v1/models', { 
+        headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` },
+        timeout: 2000 
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
+    ]);
+    
+    await testPromise;
+    
+    // Se chegou aqui, está online
+    offlineCache.isOnline = true;
+    offlineCache.connectionFailures = 0;
+    console.log('✅ Conectividade verificada: ONLINE');
+    return true;
+    
+  } catch (error) {
+    offlineCache.connectionFailures++;
+    offlineCache.isOnline = false;
+    console.log(`❌ Conectividade verificada: OFFLINE (${offlineCache.connectionFailures} falhas)`);
+    return false;
+  }
+}
+
+async function getFaqDataWithTimeout() {
+  const startTime = Date.now();
+  
+  try {
+    const response = await Promise.race([
+      sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: FAQ_SHEET_NAME,
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Sheets timeout')), SHEETS_TIMEOUT_MS)
+      )
+    ]);
+    
+    const latency = Date.now() - startTime;
+    connectivityMonitor.sheetsLatency.push(latency);
+    
+    // Manter apenas últimas 10 medições
+    if (connectivityMonitor.sheetsLatency.length > 10) {
+      connectivityMonitor.sheetsLatency = connectivityMonitor.sheetsLatency.slice(-10);
+    }
+    
+    if (!response.data.values || response.data.values.length === 0) {
+      throw new Error("Não foi possível ler dados da planilha FAQ ou ela está vazia.");
+    }
+    
+    return response.data.values;
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar dados da planilha:', error.message);
+    throw error;
+  }
+}
+
+async function syncOfflineCache() {
+  const now = Date.now();
+  
+  // Verificar se precisa sincronizar
+  if (offlineCache.faqData && (now - offlineCache.lastSync) < SYNC_INTERVAL_MS) {
+    return offlineCache.faqData;
+  }
+  
+  try {
+    console.log('🔄 Sincronizando cache offline...');
+    const faqData = await getFaqDataWithTimeout();
+    
+    offlineCache.faqData = faqData;
+    offlineCache.lastSync = now;
+    
+    console.log('✅ Cache offline sincronizado com sucesso');
+    return faqData;
+    
+  } catch (error) {
+    console.error('❌ Erro ao sincronizar cache offline:', error.message);
+    
+    // Se tem cache antigo, usar ele
+    if (offlineCache.faqData) {
+      console.log('⚠️ Usando cache offline desatualizado');
+      return offlineCache.faqData;
+    }
+    
+    throw error;
+  }
+}
+
+async function getFaqDataOffline() {
+  // Tentar buscar dados online primeiro
+  try {
+    const faqData = await getFaqDataWithTimeout();
+    
+    // Atualizar cache
+    offlineCache.faqData = faqData;
+    offlineCache.lastSync = Date.now();
+    
+    return faqData;
+    
+  } catch (error) {
+    console.log('⚠️ Falha na busca online, tentando cache offline...');
+    
+    // Usar cache offline se disponível
+    if (offlineCache.faqData) {
+      console.log('📦 Usando cache offline');
+      return offlineCache.faqData;
+    }
+    
+    throw new Error('Sem dados disponíveis online ou offline');
+  }
+}
 
 // --- FUNÇÕES DE APOIO ---
 async function getFaqData() {
@@ -102,8 +252,10 @@ function findMatches(pergunta, faqData) {
 }
 
 
-// --- FUNÇÃO OPENAI ---
-        async function askOpenAI(pergunta, contextoPlanilha, email, historicoSessao = []) {
+// --- FUNÇÃO OPENAI COM TIMEOUT E DETECÇÃO DE LATÊNCIA ---
+async function askOpenAI(pergunta, contextoPlanilha, email, historicoSessao = []) {
+  const startTime = Date.now();
+  
   try {
     const prompt = `
 ### PERSONA
@@ -126,17 +278,38 @@ ${contextoPlanilha}
 "${pergunta}"
 `;
 
-    const completion = await openai.chat.completions.create({
-      model: modeloOpenAI,
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.2,
-      max_tokens: 1024,
-    });
+    const completion = await Promise.race([
+      openai.chat.completions.create({
+        model: modeloOpenAI,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.2,
+        max_tokens: 1024,
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('OpenAI timeout')), OPENAI_TIMEOUT_MS)
+      )
+    ]);
+
+    const latency = Date.now() - startTime;
+    connectivityMonitor.openaiLatency.push(latency);
+    
+    // Manter apenas últimas 10 medições
+    if (connectivityMonitor.openaiLatency.length > 10) {
+      connectivityMonitor.openaiLatency = connectivityMonitor.openaiLatency.slice(-10);
+    }
 
     return completion.choices[0].message.content;
   } catch (error) {
-    console.error("ERRO AO CHAMAR OPENAI:", error);
-    return "Desculpe, não consegui processar sua pergunta.";
+    const latency = Date.now() - startTime;
+    console.error(`❌ ERRO AO CHAMAR OPENAI (${latency}ms):`, error.message);
+    
+    // Se foi timeout, marcar como offline
+    if (error.message === 'OpenAI timeout') {
+      offlineCache.isOnline = false;
+      offlineCache.connectionFailures++;
+    }
+    
+    throw error;
   }
 }
 
@@ -174,85 +347,114 @@ async function processAskRequest(req, res) {
 
   console.log('🤖 Nova pergunta recebida:', { pergunta, email, usar_ia_avancada });
 
-  // --- VERIFICAR SE DEVE USAR IA AVANÇADA ---
+  // --- SISTEMA DE FALLBACK AUTOMÁTICO DE 3 NÍVEIS ---
+  
+  // NÍVEL 1: IA AVANÇADA (OpenAI + busca semântica) - PRIMEIRA TENTATIVA
   if (usar_ia_avancada === 'true') {
     try {
-      const faqData = await getFaqData();
-      const historico = userSessions[email]?.historico || [];
+      // Verificar conectividade primeiro
+      const isOnline = await checkConnectivity();
       
-      console.log('🚀 Usando IA Avançada...');
-      const resultadoIA = await processarComIA(pergunta, faqData, historico, email);
-      
-      // Atualizar histórico da sessão
-      if (email) {
-        if (!userSessions[email]) {
-          userSessions[email] = { contexto: "", ultimaPergunta: "", historico: [] };
+      if (isOnline) {
+        console.log('🚀 NÍVEL 1: Tentando IA Avançada...');
+        
+        const faqData = await getFaqDataOffline();
+        const historico = userSessions[email]?.historico || [];
+        
+        // Timeout para IA avançada
+        const resultadoIA = await Promise.race([
+          processarComIA(pergunta, faqData, historico, email),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('IA Avançada timeout')), OPENAI_TIMEOUT_MS)
+          )
+        ]);
+        
+        // Atualizar histórico da sessão
+        if (email) {
+          if (!userSessions[email]) {
+            userSessions[email] = { contexto: "", ultimaPergunta: "", historico: [] };
+          }
+          userSessions[email].historico.push(
+            { role: "user", content: pergunta },
+            { role: "assistant", content: resultadoIA.resposta }
+          );
+          // Manter apenas últimas 10 interações
+          if (userSessions[email].historico.length > 20) {
+            userSessions[email].historico = userSessions[email].historico.slice(-20);
+          }
         }
-        userSessions[email].historico.push(
-          { role: "user", content: pergunta },
-          { role: "assistant", content: resultadoIA.resposta }
-        );
-        // Manter apenas últimas 10 interações
-        if (userSessions[email].historico.length > 20) {
-          userSessions[email].historico = userSessions[email].historico.slice(-20);
-        }
+
+        // Log de uso da IA
+        await logIaUsage(email, pergunta);
+
+        console.log('✅ NÍVEL 1: IA Avançada funcionou');
+        return res.status(200).json({
+          ...resultadoIA,
+          modo: 'online',
+          nivel: 1
+        });
       }
-
-      // Log de uso da IA
-      await logIaUsage(email, pergunta);
-
-      return res.status(200).json(resultadoIA);
     } catch (error) {
-      console.error('❌ Erro na IA Avançada, usando fallback:', error);
-      // Continuar com o método tradicional
+      console.error('❌ NÍVEL 1: Falha na IA Avançada:', error.message);
+      offlineCache.isOnline = false;
+      offlineCache.connectionFailures++;
     }
   }
 
-  // --- MÉTODO TRADICIONAL (FALLBACK) ---
-  const perguntaNormalizada = normalizarTexto(pergunta);
-
-  // --- MENU ESPECÍFICO: CRÉDITO ---
-  if (perguntaNormalizada === 'credito') {
-    return res.status(200).json({
-      status: "clarification_needed",
-      resposta: "Você quer qual informação sobre crédito?",
-      options: ["Antecipação", "Crédito ao trabalhador", "Crédito pessoal", "Data dos créditos ( lotes )"],
-      source: "Planilha",
-      sourceRow: 'Pergunta de Esclarecimento'
-    });
+  // NÍVEL 2: Busca local por palavras-chave - FALLBACK AUTOMÁTICO
+  try {
+    console.log('🔍 NÍVEL 2: Tentando busca local...');
+    
+    const faqData = await getFaqDataOffline();
+    const correspondencias = findMatches(pergunta, faqData);
+    
+    if (correspondencias.length > 0) {
+      console.log('✅ NÍVEL 2: Busca local funcionou');
+      
+      if (correspondencias.length === 1 || correspondencias[0].score > correspondencias[1]?.score) {
+        return res.status(200).json({
+          status: "sucesso_offline",
+          resposta: correspondencias[0].resposta,
+          sourceRow: correspondencias[0].sourceRow,
+          tabulacoes: correspondencias[0].tabulacoes,
+          source: "Cache Local",
+          modo: 'offline',
+          nivel: 2
+        });
+      } else {
+        return res.status(200).json({
+          status: "clarification_needed_offline",
+          resposta: `Encontrei vários tópicos sobre "${pergunta}". Qual deles se encaixa melhor na sua dúvida?`,
+          options: correspondencias.map(c => c.perguntaOriginal).slice(0, 12),
+          source: "Cache Local",
+          sourceRow: 'Pergunta de Esclarecimento',
+          modo: 'offline',
+          nivel: 2
+        });
+      }
+    }
+  } catch (error) {
+    console.error('❌ NÍVEL 2: Falha na busca local:', error.message);
   }
 
-  const faqData = await getFaqData();
-  const correspondencias = findMatches(pergunta, faqData);
+  // NÍVEL 3: Resposta padrão - ÚLTIMO RECURSO
+  console.log('⚠️ NÍVEL 3: Usando resposta padrão');
+  
+  const respostaPadrao = `Desculpe, no momento estou com dificuldades de conectividade e não consegui acessar a base de conhecimento completa. 
 
-  // --- SEM CORRESPONDÊNCIAS NA PLANILHA ---
-  if (correspondencias.length === 0) {
-    await logIaUsage(email, pergunta);
-    const respostaDaIA = await askOpenAI(pergunta, "Nenhum", email, reformular);
-    return res.status(200).json({
-      status: "sucesso_ia",
-      resposta: respostaDaIA,
-      source: "IA",
-      sourceRow: 'Resposta da IA'
-    });
-  }
+Tente novamente em alguns instantes, ou entre em contato diretamente com nosso suporte:
+- WhatsApp: (11) 99999-9999
+- Email: suporte@velotax.com.br
 
-  // --- SE HOUVER CORRESPONDÊNCIAS ---
-  if (correspondencias.length === 1 || correspondencias[0].score > correspondencias[1].score) {
-    return res.status(200).json({
-      status: "sucesso",
-      resposta: correspondencias[0].resposta,
-      sourceRow: correspondencias[0].sourceRow,
-      tabulacoes: correspondencias[0].tabulacoes,
-      source: "Planilha"
-    });
-  } else {
-    return res.status(200).json({
-      status: "clarification_needed",
-      resposta: `Encontrei vários tópicos sobre "${pergunta}". Qual deles se encaixa melhor na sua dúvida?`,
-      options: correspondencias.map(c => c.perguntaOriginal).slice(0, 12),
-      source: "Planilha",
-      sourceRow: 'Pergunta de Esclarecimento'
-    });
-  }
+Sua pergunta foi: "${pergunta}"`;
+
+  return res.status(200).json({
+    status: "resposta_padrao",
+    resposta: respostaPadrao,
+    source: "Sistema",
+    sourceRow: 'Resposta Padrão',
+    modo: 'offline',
+    nivel: 3,
+    aviso: 'Sistema em modo offline - conectividade limitada'
+  });
 }
