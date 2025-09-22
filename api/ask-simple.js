@@ -1,4 +1,4 @@
-// api/ask-simple.js - Sistema de cache local com dados estáticos
+// api/ask-simple.js - Sistema de cache local - 100% dados da planilha
 const { google } = require('googleapis');
 
 // Configuração do Google Sheets
@@ -85,6 +85,34 @@ async function getFaqData() {
 function normalizarTexto(texto) {
   if (!texto || typeof texto !== 'string') return '';
   return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/gi, '').trim();
+}
+
+// Função para buscar mensagens especiais na planilha
+function buscarMensagemEspecial(faqData, tipo) {
+  const tipos = {
+    'nao_encontrado': ['não encontrado', 'nao encontrado', 'sem informações', 'não localizado'],
+    'erro_sistema': ['erro interno', 'erro sistema', 'erro crítico'],
+    'múltiplas_opções': ['múltiplas opções', 'várias opções', 'escolha uma opção']
+  };
+  
+  const palavrasChave = tipos[tipo] || [];
+  
+  for (let i = 1; i < faqData.length; i++) {
+    const linha = faqData[i];
+    const pergunta = (linha[0] || '').toLowerCase();
+    const palavrasChaveLinha = (linha[2] || '').toLowerCase();
+    
+    for (const palavra of palavrasChave) {
+      if (pergunta.includes(palavra) || palavrasChaveLinha.includes(palavra)) {
+        return {
+          resposta: linha[1] || 'Mensagem não encontrada',
+          sourceRow: i + 1
+        };
+      }
+    }
+  }
+  
+  return null;
 }
 
 // Função para buscar correspondências
@@ -264,7 +292,7 @@ module.exports = async function handler(req, res) {
     console.error('❌ ask-simple: Erro crítico:', error);
     return res.status(500).json({
       status: "erro_critico",
-      resposta: "Desculpe, ocorreu um erro interno. Tente novamente em alguns instantes.",
+      resposta: "Erro interno do sistema. Tente novamente.",
       source: "Sistema",
       error: error.message
     });
@@ -282,10 +310,13 @@ async function processRequest(pergunta, email, usar_ia_avancada) {
     const correspondencias = findMatches(pergunta, faqData);
     
     if (correspondencias.length === 0) {
+      // Buscar mensagem de "não encontrado" na planilha
+      const mensagemEspecial = buscarMensagemEspecial(faqData, 'nao_encontrado');
+      
       return {
         status: "sucesso_offline",
-        resposta: "Desculpe, não encontrei informações sobre essa pergunta na nossa base de dados. Entre em contato com nosso suporte.",
-        sourceRow: 'N/A',
+        resposta: mensagemEspecial ? mensagemEspecial.resposta : "Informação não encontrada na base de dados.",
+        sourceRow: mensagemEspecial ? mensagemEspecial.sourceRow : 'N/A',
         source: 'Planilha Google Sheets',
         modo: 'offline',
         nivel: 2
@@ -306,12 +337,19 @@ async function processRequest(pergunta, email, usar_ia_avancada) {
       };
     } else {
       console.log('✅ ask-simple: Múltiplas correspondências encontradas');
+      
+      // Buscar mensagem de múltiplas opções na planilha
+      const mensagemMultiplas = buscarMensagemEspecial(faqData, 'múltiplas_opções');
+      const respostaPadrao = mensagemMultiplas ? 
+        mensagemMultiplas.resposta : 
+        `Encontrei vários tópicos sobre "${pergunta}". Qual deles se encaixa melhor na sua dúvida?`;
+      
       return {
         status: "clarification_needed_offline",
-        resposta: `Encontrei vários tópicos sobre "${pergunta}". Qual deles se encaixa melhor na sua dúvida?`,
+        resposta: respostaPadrao,
         options: correspondencias.map(c => c.perguntaOriginal).slice(0, 12),
         source: "Planilha Google Sheets",
-        sourceRow: 'Pergunta de Esclarecimento',
+        sourceRow: mensagemMultiplas ? mensagemMultiplas.sourceRow : 'Pergunta de Esclarecimento',
         modo: 'offline',
         nivel: 2
       };
