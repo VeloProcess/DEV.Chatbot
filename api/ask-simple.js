@@ -10,17 +10,6 @@ let cacheData = null;
 let lastUpdate = 0;
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutos
 
-// Dados estáticos como fallback (baseados na planilha real)
-const staticFAQData = [
-  ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
-  ['Pix', 'Para informações sobre PIX, entre em contato com nosso suporte.', 'pix, pagamento, transferencia', ''],
-  ['Antecipação', 'Para informações sobre antecipação, entre em contato com nosso suporte.', 'antecipacao, adiantamento', ''],
-  ['Crédito', 'Para informações sobre crédito, entre em contato com nosso suporte.', 'credito, financiamento', ''],
-  ['Veloprime', 'Veloprime é nosso sistema de gestão. Para mais informações, entre em contato com nosso suporte.', 'veloprime, sistema, gestao', ''],
-  ['App - Atualizar situação', 'Para atualizar a situação no app, acesse o menu principal e selecione "Atualizar Status".', 'app, atualizar, situacao, status', ''],
-  ['Desconto proporcional', 'O desconto proporcional é aplicado quando há redução no valor do empréstimo. Entre em contato para mais detalhes.', 'desconto proporcional, desconto', 'Empréstimos > Trabalhador > Repasse de valores > Crédito Adquirido'],
-  ['Valores de casas de apostas', 'O pagamento de prêmios de plataformas de apostas é de responsabilidade da própria plataforma. Verifique diretamente com o suporte da plataforma.', 'bet, jogo de aposta, casa de aposta, plataforma de jogos', 'Empréstimos > Pessoal > Elegibilidade > Inelegível / Fora do perfil']
-];
 
 // Cliente Google Sheets
 let auth, sheets;
@@ -39,46 +28,36 @@ try {
   console.error('❌ Erro ao configurar Google Sheets no ask-simple:', error.message);
 }
 
-// Função para atualizar cache em background
-async function updateCacheInBackground() {
-  if (!sheets) {
-    console.log('⚠️ ask-simple: Google Sheets não configurado, usando dados estáticos');
-    return;
-  }
 
-  try {
-    console.log('🔄 ask-simple: Atualizando cache em background...');
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: FAQ_SHEET_NAME,
-    });
-    
-    if (response.data.values && response.data.values.length > 0) {
-      cacheData = response.data.values;
-      lastUpdate = Date.now();
-      console.log('✅ ask-simple: Cache atualizado com', cacheData.length, 'linhas');
-    }
-  } catch (error) {
-    console.log('⚠️ ask-simple: Erro ao atualizar cache:', error.message);
-  }
-}
-
-// Função para obter dados (cache ou estáticos)
-function getFaqData() {
+// Função para obter dados APENAS da planilha
+async function getFaqData() {
   // Se cache está válido, usar cache
   if (cacheData && Date.now() - lastUpdate < CACHE_DURATION) {
     console.log('📦 ask-simple: Usando dados do cache');
     return cacheData;
   }
   
-  // Se cache expirou, tentar atualizar em background
-  if (sheets) {
-    updateCacheInBackground().catch(() => {});
+  // Buscar dados diretamente da planilha
+  if (!sheets) {
+    throw new Error('Google Sheets não configurado');
   }
   
-  // Usar dados estáticos como fallback
-  console.log('📋 ask-simple: Usando dados estáticos');
-  return staticFAQData;
+  console.log('🔍 ask-simple: Buscando dados diretamente da planilha...');
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: FAQ_SHEET_NAME,
+  });
+  
+  if (!response.data.values || response.data.values.length === 0) {
+    throw new Error("Planilha FAQ vazia ou não encontrada");
+  }
+  
+  // Atualizar cache
+  cacheData = response.data.values;
+  lastUpdate = Date.now();
+  
+  console.log('✅ ask-simple: Dados da planilha obtidos com sucesso:', cacheData.length, 'linhas');
+  return cacheData;
 }
 
 // Função para normalizar texto
@@ -115,6 +94,8 @@ function findMatches(pergunta, faqData) {
   const palavrasDaBusca = normalizarTexto(pergunta).split(' ').filter(p => p.length > 2);
   let todasAsCorrespondencias = [];
 
+  console.log('🔍 ask-simple: Pergunta original:', pergunta);
+  console.log('🔍 ask-simple: Pergunta normalizada:', normalizarTexto(pergunta));
   console.log('🔍 ask-simple: Palavras da busca:', palavrasDaBusca);
   console.log('🔍 ask-simple: Total de linhas para buscar:', dados.length);
 
@@ -132,12 +113,28 @@ function findMatches(pergunta, faqData) {
       textoPalavrasChaveNormalizado: textoPalavrasChave
     });
     
+    // Busca mais flexível - verificar se a pergunta contém parte do texto
+    const perguntaOriginal = linhaAtual[idxPergunta] || '';
+    const palavrasChaveOriginal = linhaAtual[idxPalavrasChave] || '';
+    
+    // Correspondência exata na pergunta (peso máximo)
+    if (perguntaOriginal.toLowerCase().includes(pergunta.toLowerCase())) {
+      relevanceScore += 5;
+      console.log(`🎯 ask-simple: Correspondência exata na pergunta: "${perguntaOriginal}"`);
+    }
+    
+    // Correspondência exata nas palavras-chave (peso alto)
+    if (palavrasChaveOriginal.toLowerCase().includes(pergunta.toLowerCase())) {
+      relevanceScore += 4;
+      console.log(`🎯 ask-simple: Correspondência exata nas palavras-chave: "${palavrasChaveOriginal}"`);
+    }
+    
     // Buscar nas palavras-chave (prioridade alta)
     if (textoPalavrasChave) {
       palavrasDaBusca.forEach(palavra => {
         if (textoPalavrasChave.includes(palavra)) {
-          relevanceScore += 2; // Peso maior para palavras-chave
-          console.log(`✅ ask-simple: Palavra "${palavra}" encontrada nas palavras-chave (peso 2)`);
+          relevanceScore += 3; // Peso maior para palavras-chave
+          console.log(`✅ ask-simple: Palavra "${palavra}" encontrada nas palavras-chave (peso 3)`);
         }
       });
     }
@@ -145,24 +142,19 @@ function findMatches(pergunta, faqData) {
     // Buscar na pergunta (prioridade menor)
     palavrasDaBusca.forEach(palavra => {
       if (textoPergunta.includes(palavra)) {
-        relevanceScore += 1; // Peso menor para pergunta
-        console.log(`✅ ask-simple: Palavra "${palavra}" encontrada na pergunta (peso 1)`);
+        relevanceScore += 2; // Peso menor para pergunta
+        console.log(`✅ ask-simple: Palavra "${palavra}" encontrada na pergunta (peso 2)`);
       }
     });
     
-    // Busca mais flexível - verificar se a pergunta contém parte do texto
-    const perguntaOriginal = linhaAtual[idxPergunta] || '';
-    if (perguntaOriginal.toLowerCase().includes(pergunta.toLowerCase())) {
-      relevanceScore += 3; // Peso alto para correspondência exata
-      console.log(`🎯 ask-simple: Correspondência exata encontrada na pergunta: "${perguntaOriginal}"`);
-    }
-    
-    // Busca nas palavras-chave com correspondência parcial
-    const palavrasChaveOriginal = linhaAtual[idxPalavrasChave] || '';
-    if (palavrasChaveOriginal.toLowerCase().includes(pergunta.toLowerCase())) {
-      relevanceScore += 3; // Peso alto para correspondência exata
-      console.log(`🎯 ask-simple: Correspondência exata encontrada nas palavras-chave: "${palavrasChaveOriginal}"`);
-    }
+    // Busca por palavras-chave individuais (mais flexível)
+    const palavrasChaveArray = palavrasChaveOriginal.toLowerCase().split(/[,\s]+/).filter(p => p.length > 2);
+    palavrasChaveArray.forEach(palavraChave => {
+      if (pergunta.toLowerCase().includes(palavraChave)) {
+        relevanceScore += 2;
+        console.log(`🔍 ask-simple: Palavra-chave "${palavraChave}" encontrada na pergunta (peso 2)`);
+      }
+    });
     
     if (relevanceScore > 0) {
       console.log(`🎯 ask-simple: Correspondência encontrada na linha ${i + 2} com score ${relevanceScore}`);
@@ -190,11 +182,6 @@ function findMatches(pergunta, faqData) {
   return correspondenciasUnicas;
 }
 
-// Inicializar cache na primeira execução
-if (!cacheData) {
-  console.log('🚀 ask-simple: Inicializando cache...');
-  updateCacheInBackground();
-}
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -216,9 +203,9 @@ module.exports = async function handler(req, res) {
 
     console.log('🔍 ask-simple: Pergunta recebida:', { pergunta, email, usar_ia_avancada });
 
-    // Obter dados (cache ou estáticos)
-    const faqData = getFaqData();
-    console.log('📊 ask-simple: Dados obtidos:', faqData.length, 'linhas');
+    // Obter dados APENAS da planilha
+    const faqData = await getFaqData();
+    console.log('📊 ask-simple: Dados obtidos da planilha:', faqData.length, 'linhas');
 
     // Buscar correspondências na planilha
     const correspondencias = findMatches(pergunta, faqData);
@@ -226,9 +213,9 @@ module.exports = async function handler(req, res) {
     if (correspondencias.length === 0) {
       return res.status(200).json({
         status: "sucesso_offline",
-        resposta: "Desculpe, não encontrei informações sobre essa pergunta. Entre em contato com nosso suporte.",
+        resposta: "Desculpe, não encontrei informações sobre essa pergunta na nossa base de dados. Entre em contato com nosso suporte.",
         sourceRow: 'N/A',
-        source: 'Cache Local',
+        source: 'Planilha Google Sheets',
         modo: 'offline',
         nivel: 2
       });
@@ -242,7 +229,7 @@ module.exports = async function handler(req, res) {
         resposta: correspondencias[0].resposta,
         sourceRow: correspondencias[0].sourceRow,
         tabulacoes: correspondencias[0].tabulacoes,
-        source: "Planilha",
+        source: "Planilha Google Sheets",
         modo: 'offline',
         nivel: 2
       });
@@ -252,7 +239,7 @@ module.exports = async function handler(req, res) {
         status: "clarification_needed_offline",
         resposta: `Encontrei vários tópicos sobre "${pergunta}". Qual deles se encaixa melhor na sua dúvida?`,
         options: correspondencias.map(c => c.perguntaOriginal).slice(0, 12),
-        source: "Planilha",
+        source: "Planilha Google Sheets",
         sourceRow: 'Pergunta de Esclarecimento',
         modo: 'offline',
         nivel: 2
