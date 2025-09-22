@@ -195,17 +195,13 @@ module.exports = async function handler(req, res) {
       
       console.log('✅ ask-simple: Dados da planilha obtidos com sucesso');
     } catch (error) {
-      console.log('⚠️ ask-simple: Erro ao buscar planilha, usando fallback:', error.message);
-      
-      // Dados de fallback se a planilha falhar
-      faqData = [
-        ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
-        ['Pix', 'Para informações sobre PIX, entre em contato com nosso suporte.', 'pix, pagamento, transferencia', ''],
-        ['Antecipação', 'Para informações sobre antecipação, entre em contato com nosso suporte.', 'antecipacao, adiantamento', ''],
-        ['Crédito', 'Para informações sobre crédito, entre em contato com nosso suporte.', 'credito, financiamento', ''],
-        ['Veloprime', 'Veloprime é nosso sistema de gestão. Para mais informações, entre em contato com nosso suporte.', 'veloprime, sistema, gestao', ''],
-        ['App - Atualizar situação', 'Para atualizar a situação no app, acesse o menu principal e selecione "Atualizar Status".', 'app, atualizar, situacao, status', '']
-      ];
+      console.log('❌ ask-simple: Erro ao buscar planilha:', error.message);
+      return res.status(500).json({
+        status: "erro_planilha",
+        resposta: "Erro ao acessar a base de dados. Tente novamente em alguns instantes.",
+        source: "Sistema",
+        error: error.message
+      });
     }
 
     // Buscar correspondências na planilha
