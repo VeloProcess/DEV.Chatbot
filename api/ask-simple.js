@@ -1,15 +1,9 @@
-// api/ask-simple.js - Sistema de cache local - 100% dados da planilha
+// api/ask-simple.js - Busca sempre na planilha (sem cache)
 const { google } = require('googleapis');
 
 // Configuração do Google Sheets
 const SPREADSHEET_ID = "1tnWusrOW-UXHFM8GT3o0Du93QDwv5G3Ylvgebof9wfQ";
 const FAQ_SHEET_NAME = "FAQ!A:D";
-
-// Cache em memória
-let cacheData = null;
-let lastUpdate = 0;
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutos
-
 
 // Cliente Google Sheets
 let auth, sheets;
@@ -28,68 +22,24 @@ try {
   console.error('❌ Erro ao configurar Google Sheets no ask-simple:', error.message);
 }
 
-
-// Função para obter dados com timeout inteligente
+// Função para buscar dados da planilha (sempre atualizado)
 async function getFaqData() {
-  // Se cache está válido, usar cache (resposta instantânea)
-  if (cacheData && Date.now() - lastUpdate < CACHE_DURATION) {
-    console.log('📦 ask-simple: Usando dados do cache (instantâneo)');
-    return cacheData;
-  }
-  
-  // Se não tem cache, tentar buscar com timeout de 2 segundos
   if (!sheets) {
     throw new Error('Google Sheets não configurado');
   }
   
-  console.log('🔍 ask-simple: Cache expirado, buscando dados da planilha...');
+  console.log('🔍 ask-simple: Buscando dados da planilha...');
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: FAQ_SHEET_NAME,
+  });
   
-  try {
-    // Timeout de 2 segundos para evitar 504
-    const response = await Promise.race([
-      sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: FAQ_SHEET_NAME,
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout da planilha')), 2000)
-      )
-    ]);
-    
-    if (!response.data.values || response.data.values.length === 0) {
-      throw new Error("Planilha FAQ vazia ou não encontrada");
-    }
-    
-    // Atualizar cache
-    cacheData = response.data.values;
-    lastUpdate = Date.now();
-    
-    console.log('✅ ask-simple: Dados da planilha obtidos com sucesso:', cacheData.length, 'linhas');
-    return cacheData;
-    
-  } catch (error) {
-    console.log('⚠️ ask-simple: Erro ao buscar planilha:', error.message);
-    
-    // Se tem cache antigo, usar ele mesmo expirado
-    if (cacheData) {
-      console.log('📦 ask-simple: Usando cache antigo como fallback');
-      return cacheData;
-    }
-    
-    // Se não tem cache, criar dados mínimos para evitar erro
-    console.log('⚠️ ask-simple: Criando dados mínimos para evitar erro');
-    const dadosMinimos = [
-      ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
-      ['Erro de conexão', 'Sistema temporariamente indisponível. Tente novamente em alguns instantes.', 'erro, conexão, indisponível', ''],
-      ['Não encontrado', 'Informação não encontrada na base de dados.', 'não encontrado, sem informações', ''],
-      ['Múltiplas opções', 'Encontrei várias opções. Escolha uma das opções abaixo:', 'múltiplas opções, várias opções', '']
-    ];
-    
-    cacheData = dadosMinimos;
-    lastUpdate = Date.now();
-    
-    return cacheData;
+  if (!response.data.values || response.data.values.length === 0) {
+    throw new Error("Planilha FAQ vazia ou não encontrada");
   }
+  
+  console.log('✅ ask-simple: Dados da planilha obtidos:', response.data.values.length, 'linhas');
+  return response.data.values;
 }
 
 // Função para normalizar texto
@@ -98,147 +48,35 @@ function normalizarTexto(texto) {
   return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/gi, '').trim();
 }
 
-// Função para buscar mensagens especiais na planilha
-function buscarMensagemEspecial(faqData, tipo) {
-  // Verificar se faqData é válido
-  if (!faqData || !Array.isArray(faqData) || faqData.length < 2) {
-    console.log('⚠️ ask-simple: faqData inválido na busca de mensagem especial');
-    return null;
-  }
-  
-  const tipos = {
-    'nao_encontrado': ['não encontrado', 'nao encontrado', 'sem informações', 'não localizado'],
-    'erro_sistema': ['erro interno', 'erro sistema', 'erro crítico'],
-    'múltiplas_opções': ['múltiplas opções', 'várias opções', 'escolha uma opção']
-  };
-  
-  const palavrasChave = tipos[tipo] || [];
-  
-  for (let i = 1; i < faqData.length; i++) {
-    const linha = faqData[i];
-    if (!linha || !Array.isArray(linha)) continue;
-    
-    const pergunta = (linha[0] || '').toLowerCase();
-    const palavrasChaveLinha = (linha[2] || '').toLowerCase();
-    
-    for (const palavra of palavrasChave) {
-      if (pergunta.includes(palavra) || palavrasChaveLinha.includes(palavra)) {
-        return {
-          resposta: linha[1] || 'Mensagem não encontrada',
-          sourceRow: i + 1
-        };
-      }
-    }
-  }
-  
-  return null;
-}
-
-// Função para buscar correspondências
+// Função para buscar correspondências (igual ao ask.js original)
 function findMatches(pergunta, faqData) {
-  console.log('🔍 ask-simple: Iniciando busca de correspondências...');
-  
-  // Verificar se faqData é válido
-  if (!faqData || !Array.isArray(faqData) || faqData.length < 2) {
-    console.log('⚠️ ask-simple: faqData inválido na busca de correspondências');
-    return [];
-  }
-  
-  console.log('📊 ask-simple: Dados recebidos:', {
-    totalLinhas: faqData.length,
-    cabecalho: faqData[0]
-  });
-
   const cabecalho = faqData[0];
   const dados = faqData.slice(1);
-  
-  // Usar índices fixos baseados na estrutura da planilha
-  const idxPergunta = 0; // Coluna A
-  const idxResposta = 1; // Coluna B
-  const idxPalavrasChave = 2; // Coluna C
-  const idxTabulacoes = 3; // Coluna D
+  const idxPergunta = cabecalho.indexOf("Pergunta");
+  const idxPalavrasChave = cabecalho.indexOf("Palavras-chave");
+  const idxResposta = cabecalho.indexOf("Resposta");
 
-  console.log('🔍 ask-simple: Índices encontrados:', {
-    pergunta: idxPergunta,
-    palavrasChave: idxPalavrasChave,
-    resposta: idxResposta
-  });
-
-  console.log('✅ ask-simple: Usando estrutura fixa da planilha FAQ');
+  if (idxPergunta === -1 || idxResposta === -1 || idxPalavrasChave === -1) {
+    throw new Error("Colunas essenciais (Pergunta, Resposta, Palavras-chave) não encontradas.");
+  }
 
   const palavrasDaBusca = normalizarTexto(pergunta).split(' ').filter(p => p.length > 2);
   let todasAsCorrespondencias = [];
 
-  console.log('🔍 ask-simple: Pergunta original:', pergunta);
-  console.log('🔍 ask-simple: Pergunta normalizada:', normalizarTexto(pergunta));
-  console.log('🔍 ask-simple: Palavras da busca:', palavrasDaBusca);
-  console.log('🔍 ask-simple: Total de linhas para buscar:', dados.length);
-
   for (let i = 0; i < dados.length; i++) {
     const linhaAtual = dados[i];
-    const textoPalavrasChave = idxPalavrasChave !== -1 ? 
-      normalizarTexto(linhaAtual[idxPalavrasChave] || '') : '';
-    const textoPergunta = normalizarTexto(linhaAtual[idxPergunta] || '');
+    const textoPalavrasChave = normalizarTexto(linhaAtual[idxPalavrasChave] || '');
     let relevanceScore = 0;
-    
-    console.log(`🔍 ask-simple: Linha ${i + 2}:`, {
-      pergunta: linhaAtual[idxPergunta],
-      palavrasChave: linhaAtual[idxPalavrasChave],
-      textoPerguntaNormalizado: textoPergunta,
-      textoPalavrasChaveNormalizado: textoPalavrasChave
-    });
-    
-    // Busca mais flexível - verificar se a pergunta contém parte do texto
-    const perguntaOriginal = linhaAtual[idxPergunta] || '';
-    const palavrasChaveOriginal = linhaAtual[idxPalavrasChave] || '';
-    
-    // Correspondência exata na pergunta (peso máximo)
-    if (perguntaOriginal.toLowerCase().includes(pergunta.toLowerCase())) {
-      relevanceScore += 5;
-      console.log(`🎯 ask-simple: Correspondência exata na pergunta: "${perguntaOriginal}"`);
-    }
-    
-    // Correspondência exata nas palavras-chave (peso alto)
-    if (palavrasChaveOriginal.toLowerCase().includes(pergunta.toLowerCase())) {
-      relevanceScore += 4;
-      console.log(`🎯 ask-simple: Correspondência exata nas palavras-chave: "${palavrasChaveOriginal}"`);
-    }
-    
-    // Buscar nas palavras-chave (prioridade alta)
-    if (textoPalavrasChave) {
-      palavrasDaBusca.forEach(palavra => {
-        if (textoPalavrasChave.includes(palavra)) {
-          relevanceScore += 3; // Peso maior para palavras-chave
-          console.log(`✅ ask-simple: Palavra "${palavra}" encontrada nas palavras-chave (peso 3)`);
-        }
-      });
-    }
-    
-    // Buscar na pergunta (prioridade menor)
     palavrasDaBusca.forEach(palavra => {
-      if (textoPergunta.includes(palavra)) {
-        relevanceScore += 2; // Peso menor para pergunta
-        console.log(`✅ ask-simple: Palavra "${palavra}" encontrada na pergunta (peso 2)`);
-      }
+      if (textoPalavrasChave.includes(palavra)) relevanceScore++;
     });
-    
-    // Busca por palavras-chave individuais (mais flexível)
-    const palavrasChaveArray = palavrasChaveOriginal.toLowerCase().split(/[,\s]+/).filter(p => p.length > 2);
-    palavrasChaveArray.forEach(palavraChave => {
-      if (pergunta.toLowerCase().includes(palavraChave)) {
-        relevanceScore += 2;
-        console.log(`🔍 ask-simple: Palavra-chave "${palavraChave}" encontrada na pergunta (peso 2)`);
-      }
-    });
-    
     if (relevanceScore > 0) {
-      console.log(`🎯 ask-simple: Correspondência encontrada na linha ${i + 2} com score ${relevanceScore}`);
       todasAsCorrespondencias.push({
         resposta: linhaAtual[idxResposta],
         perguntaOriginal: linhaAtual[idxPergunta],
         sourceRow: i + 2,
         score: relevanceScore,
-        tabulacoes: linhaAtual[idxTabulacoes] || null
+        tabulacoes: linhaAtual[3] || null
       });
     }
   }
@@ -251,64 +89,10 @@ function findMatches(pergunta, faqData) {
       uniqueMatches[key] = match;
     }
   });
-  
   let correspondenciasUnicas = Object.values(uniqueMatches);
   correspondenciasUnicas.sort((a, b) => b.score - a.score);
   return correspondenciasUnicas;
 }
-
-// Função para inicializar cache em background
-async function initializeCache() {
-  if (!sheets) {
-    console.log('⚠️ ask-simple: Google Sheets não configurado, criando dados mínimos');
-    // Criar dados mínimos mesmo sem Google Sheets
-    cacheData = [
-      ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
-      ['Erro de conexão', 'Sistema temporariamente indisponível. Tente novamente em alguns instantes.', 'erro, conexão, indisponível', ''],
-      ['Não encontrado', 'Informação não encontrada na base de dados.', 'não encontrado, sem informações', ''],
-      ['Múltiplas opções', 'Encontrei várias opções. Escolha uma das opções abaixo:', 'múltiplas opções, várias opções', '']
-    ];
-    lastUpdate = Date.now();
-    return;
-  }
-  
-  try {
-    console.log('🚀 ask-simple: Inicializando cache em background...');
-    
-    // Timeout de 5 segundos para inicialização
-    const response = await Promise.race([
-      sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: FAQ_SHEET_NAME,
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout na inicialização')), 5000)
-      )
-    ]);
-    
-    if (response.data.values && response.data.values.length > 0) {
-      cacheData = response.data.values;
-      lastUpdate = Date.now();
-      console.log('✅ ask-simple: Cache inicializado com', cacheData.length, 'linhas');
-    } else {
-      throw new Error('Planilha vazia');
-    }
-  } catch (error) {
-    console.log('⚠️ ask-simple: Erro ao inicializar cache:', error.message);
-    // Criar dados mínimos em caso de erro
-    cacheData = [
-      ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
-      ['Erro de conexão', 'Sistema temporariamente indisponível. Tente novamente em alguns instantes.', 'erro, conexão, indisponível', ''],
-      ['Não encontrado', 'Informação não encontrada na base de dados.', 'não encontrado, sem informações', ''],
-      ['Múltiplas opções', 'Encontrei várias opções. Escolha uma das opções abaixo:', 'múltiplas opções, várias opções', '']
-    ];
-    lastUpdate = Date.now();
-    console.log('📦 ask-simple: Dados mínimos criados como fallback');
-  }
-}
-
-// Inicializar cache na primeira execução
-initializeCache();
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -330,16 +114,49 @@ module.exports = async function handler(req, res) {
 
     console.log('🔍 ask-simple: Pergunta recebida:', { pergunta, email, usar_ia_avancada });
 
-    // Timeout global de 3 segundos para evitar 504
-    const result = await Promise.race([
-      processRequest(pergunta, email, usar_ia_avancada),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout global da API')), 3000)
-      )
-    ]);
+    // Buscar dados da planilha (sempre atualizado)
+    const faqData = await getFaqData();
+    console.log('📊 ask-simple: Dados obtidos da planilha:', faqData.length, 'linhas');
+
+    // Buscar correspondências na planilha
+    const correspondencias = findMatches(pergunta, faqData);
     
-    return res.status(200).json(result);
-    
+    if (correspondencias.length === 0) {
+      return res.status(200).json({
+        status: "sucesso_offline",
+        resposta: "Desculpe, não encontrei informações sobre essa pergunta na nossa base de dados. Entre em contato com nosso suporte.",
+        sourceRow: 'N/A',
+        source: 'Planilha Google Sheets',
+        modo: 'offline',
+        nivel: 2
+      });
+    }
+
+    // Se encontrou correspondências
+    if (correspondencias.length === 1 || correspondencias[0].score > correspondencias[1]?.score) {
+      console.log('✅ ask-simple: Resposta única encontrada');
+      return res.status(200).json({
+        status: "sucesso_offline",
+        resposta: correspondencias[0].resposta,
+        sourceRow: correspondencias[0].sourceRow,
+        tabulacoes: correspondencias[0].tabulacoes,
+        source: "Planilha Google Sheets",
+        modo: 'offline',
+        nivel: 2
+      });
+    } else {
+      console.log('✅ ask-simple: Múltiplas correspondências encontradas');
+      return res.status(200).json({
+        status: "clarification_needed_offline",
+        resposta: `Encontrei vários tópicos sobre "${pergunta}". Qual deles se encaixa melhor na sua dúvida?`,
+        options: correspondencias.map(c => c.perguntaOriginal).slice(0, 12),
+        source: "Planilha Google Sheets",
+        sourceRow: 'Pergunta de Esclarecimento',
+        modo: 'offline',
+        nivel: 2
+      });
+    }
+
   } catch (error) {
     console.error('❌ ask-simple: Erro crítico:', error);
     return res.status(500).json({
@@ -348,67 +165,5 @@ module.exports = async function handler(req, res) {
       source: "Sistema",
       error: error.message
     });
-  }
-}
-
-// Função separada para processar a requisição
-async function processRequest(pergunta, email, usar_ia_avancada) {
-  try {
-    // Obter dados APENAS da planilha
-    const faqData = await getFaqData();
-    console.log('📊 ask-simple: Dados obtidos da planilha:', faqData.length, 'linhas');
-
-    // Buscar correspondências na planilha
-    const correspondencias = findMatches(pergunta, faqData);
-    
-    if (correspondencias.length === 0) {
-      // Buscar mensagem de "não encontrado" na planilha
-      const mensagemEspecial = buscarMensagemEspecial(faqData, 'nao_encontrado');
-      
-      return {
-        status: "sucesso_offline",
-        resposta: mensagemEspecial ? mensagemEspecial.resposta : "Informação não encontrada na base de dados.",
-        sourceRow: mensagemEspecial ? mensagemEspecial.sourceRow : 'N/A',
-        source: 'Planilha Google Sheets',
-        modo: 'offline',
-        nivel: 2
-      };
-    }
-
-    // Se encontrou correspondências
-    if (correspondencias.length === 1 || correspondencias[0].score > correspondencias[1]?.score) {
-      console.log('✅ ask-simple: Resposta única encontrada');
-      return {
-        status: "sucesso_offline",
-        resposta: correspondencias[0].resposta,
-        sourceRow: correspondencias[0].sourceRow,
-        tabulacoes: correspondencias[0].tabulacoes,
-        source: "Planilha Google Sheets",
-        modo: 'offline',
-        nivel: 2
-      };
-    } else {
-      console.log('✅ ask-simple: Múltiplas correspondências encontradas');
-      
-      // Buscar mensagem de múltiplas opções na planilha
-      const mensagemMultiplas = buscarMensagemEspecial(faqData, 'múltiplas_opções');
-      const respostaPadrao = mensagemMultiplas ? 
-        mensagemMultiplas.resposta : 
-        `Encontrei vários tópicos sobre "${pergunta}". Qual deles se encaixa melhor na sua dúvida?`;
-      
-      return {
-        status: "clarification_needed_offline",
-        resposta: respostaPadrao,
-        options: correspondencias.map(c => c.perguntaOriginal).slice(0, 12),
-        source: "Planilha Google Sheets",
-        sourceRow: mensagemMultiplas ? mensagemMultiplas.sourceRow : 'Pergunta de Esclarecimento',
-        modo: 'offline',
-        nivel: 2
-      };
-    }
-
-  } catch (error) {
-    console.error('❌ ask-simple: Erro no processamento:', error);
-    throw error; // Re-throw para ser capturado pelo timeout global
   }
 };
