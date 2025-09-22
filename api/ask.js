@@ -100,39 +100,34 @@ async function checkConnectivity() {
 }
 
 async function getFaqDataWithTimeout() {
-  const startTime = Date.now();
-  
   try {
     if (!sheets) {
       throw new Error('Google Sheets não configurado');
     }
     
-    const response = await Promise.race([
-      sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: FAQ_SHEET_NAME,
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Sheets timeout')), SHEETS_TIMEOUT_MS)
-      )
-    ]);
+    console.log('🔍 ask.js: Buscando dados da planilha...');
     
-    const latency = Date.now() - startTime;
-    connectivityMonitor.sheetsLatency.push(latency);
+    // Timeout de 2 segundos para evitar FUNCTION_INVOCATION_TIMEOUT
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Timeout da planilha')), 2000);
+    });
     
-    // Manter apenas últimas 10 medições
-    if (connectivityMonitor.sheetsLatency.length > 10) {
-      connectivityMonitor.sheetsLatency = connectivityMonitor.sheetsLatency.slice(-10);
-    }
+    const sheetsPromise = sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: FAQ_SHEET_NAME,
+    });
+    
+    const response = await Promise.race([sheetsPromise, timeoutPromise]);
     
     if (!response.data.values || response.data.values.length === 0) {
-      throw new Error("Não foi possível ler dados da planilha FAQ ou ela está vazia.");
+      throw new Error("Planilha FAQ vazia ou não encontrada");
     }
     
+    console.log('✅ ask.js: Dados da planilha obtidos:', response.data.values.length, 'linhas');
     return response.data.values;
     
   } catch (error) {
-    console.error('❌ Erro ao buscar dados da planilha:', error.message);
+    console.error('❌ ask.js: Erro ao buscar dados da planilha:', error.message);
     throw error;
   }
 }
