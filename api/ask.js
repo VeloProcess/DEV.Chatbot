@@ -171,16 +171,18 @@ async function syncOfflineCache() {
 async function getFaqDataOffline() {
   // Tentar buscar dados online primeiro
   try {
+    console.log('🔍 Tentando buscar dados do Google Sheets...');
     const faqData = await getFaqDataWithTimeout();
     
     // Atualizar cache
     offlineCache.faqData = faqData;
     offlineCache.lastSync = Date.now();
     
+    console.log('✅ Dados do Google Sheets obtidos com sucesso');
     return faqData;
     
   } catch (error) {
-    console.log('⚠️ Falha na busca online, tentando cache offline...');
+    console.log('⚠️ Falha na busca online, tentando cache offline...', error.message);
     
     // Usar cache offline se disponível
     if (offlineCache.faqData) {
@@ -188,7 +190,19 @@ async function getFaqDataOffline() {
       return offlineCache.faqData;
     }
     
-    throw new Error('Sem dados disponíveis online ou offline');
+    // Se não tem cache, criar dados de fallback
+    console.log('📦 Criando dados de fallback...');
+    const fallbackData = [
+      ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
+      ['Pix', 'Para informações sobre PIX, entre em contato com nosso suporte.', 'pix, pagamento, transferencia', ''],
+      ['Antecipação', 'Para informações sobre antecipação, entre em contato com nosso suporte.', 'antecipacao, adiantamento', ''],
+      ['Crédito', 'Para informações sobre crédito, entre em contato com nosso suporte.', 'credito, financiamento', '']
+    ];
+    
+    offlineCache.faqData = fallbackData;
+    offlineCache.lastSync = Date.now();
+    
+    return fallbackData;
   }
 }
 
