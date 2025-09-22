@@ -29,10 +29,18 @@ async function getFaqData() {
   }
   
   console.log('🔍 ask-simple: Buscando dados da planilha...');
-  const response = await sheets.spreadsheets.values.get({
+  
+  // Timeout de 3 segundos para evitar FUNCTION_INVOCATION_TIMEOUT
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Timeout da planilha')), 3000);
+  });
+  
+  const sheetsPromise = sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
     range: FAQ_SHEET_NAME,
   });
+  
+  const response = await Promise.race([sheetsPromise, timeoutPromise]);
   
   if (!response.data.values || response.data.values.length === 0) {
     throw new Error("Planilha FAQ vazia ou não encontrada");
