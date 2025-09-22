@@ -195,12 +195,23 @@ module.exports = async function handler(req, res) {
       
       console.log('✅ ask-simple: Dados da planilha obtidos com sucesso');
     } catch (error) {
-      console.log('❌ ask-simple: Erro ao buscar planilha:', error.message);
+      console.log('❌ ask-simple: Erro ao buscar planilha:', error);
+      console.log('❌ ask-simple: Detalhes do erro:', {
+        message: error.message,
+        code: error.code,
+        status: error.status,
+        response: error.response?.data
+      });
+      
       return res.status(500).json({
         status: "erro_planilha",
         resposta: "Erro ao acessar a base de dados. Tente novamente em alguns instantes.",
         source: "Sistema",
-        error: error.message
+        error: error.message,
+        details: {
+          code: error.code,
+          status: error.status
+        }
       });
     }
 
