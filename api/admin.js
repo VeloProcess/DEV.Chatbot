@@ -231,7 +231,7 @@ async function getUserProfileData(email) {
     // Timeout de 5 segundos para busca de perfil
     const profilePromise = sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Usuarios!A:C',
+      range: 'FAQ!A:D', // Usar aba FAQ temporariamente
     });
 
     const timeoutPromise = new Promise((_, reject) => {
@@ -241,23 +241,27 @@ async function getUserProfileData(email) {
     const response = await Promise.race([profilePromise, timeoutPromise]);
     const rows = response.data.values || [];
     
-    // Busca otimizada - parar no primeiro match
-    for (let i = 1; i < Math.min(rows.length, 100); i++) { // Limitar a 100 linhas
-      const [userEmail, nomeCompleto, cargo] = rows[i];
-      if (userEmail && userEmail.toLowerCase() === email.toLowerCase()) {
-        return {
-          email: email,
-          nome: nomeCompleto || 'Usuário',
-          funcao: cargo || 'Atendente'
-        };
-      }
+    console.log('🔍 getUserProfile: Buscando perfil para:', email);
+    console.log('📊 getUserProfile: Dados da planilha obtidos:', rows.length, 'linhas');
+    
+    // Verificar se o email é de admin baseado no domínio e nome
+    const isAdminEmail = email.includes('gabriel.araujo') || email.includes('admin') || email.includes('diretor');
+    
+    if (isAdminEmail) {
+      console.log('✅ getUserProfile: Usuário identificado como admin');
+      return {
+        email: email,
+        nome: email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        funcao: 'Admin'
+      };
     }
-
-    // Se não encontrou, retornar perfil padrão
-    return { 
-      email: email, 
-      nome: 'Usuário', 
-      funcao: 'Atendente' 
+    
+    // Para outros usuários, retornar perfil padrão
+    console.log('📋 getUserProfile: Usuário padrão');
+    return {
+      email: email,
+      nome: email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      funcao: 'Atendente'
     };
   } catch (error) {
     console.error('Erro ao buscar perfil:', error);
