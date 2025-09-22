@@ -190,19 +190,9 @@ async function getFaqDataOffline() {
       return offlineCache.faqData;
     }
     
-    // Se não tem cache, criar dados de fallback
-    console.log('📦 Criando dados de fallback...');
-    const fallbackData = [
-      ['Pergunta', 'Resposta', 'Palavras-chave', 'Tabulacoes'],
-      ['Pix', 'Para informações sobre PIX, entre em contato com nosso suporte.', 'pix, pagamento, transferencia', ''],
-      ['Antecipação', 'Para informações sobre antecipação, entre em contato com nosso suporte.', 'antecipacao, adiantamento', ''],
-      ['Crédito', 'Para informações sobre crédito, entre em contato com nosso suporte.', 'credito, financiamento', '']
-    ];
-    
-    offlineCache.faqData = fallbackData;
-    offlineCache.lastSync = Date.now();
-    
-    return fallbackData;
+    // Se não tem cache, retornar erro
+    console.log('❌ Nenhum cache disponível e sem conectividade');
+    throw new Error('Sem dados disponíveis e sem conectividade');
   }
 }
 
@@ -483,32 +473,24 @@ async function processAskRequest(req, res) {
     console.error('❌ NÍVEL 2: Falha na busca local:', error.message);
   }
 
-  // NÍVEL 3: Resposta padrão - ÚLTIMO RECURSO
-  console.log('⚠️ NÍVEL 3: Usando resposta padrão');
+  // NÍVEL 3: Erro - Sem dados disponíveis
+  console.log('❌ NÍVEL 3: Sem dados disponíveis');
   
-  const respostaPadrao = `Desculpe, no momento estou com dificuldades de conectividade e não consegui acessar a base de conhecimento completa. 
-
-Tente novamente em alguns instantes, ou entre em contato diretamente com nosso suporte:
-- WhatsApp: (11) 99999-9999
-- Email: suporte@velotax.com.br
-
-Sua pergunta foi: "${pergunta}"`;
-
-    return res.status(200).json({
-      status: "resposta_padrao",
-      resposta: respostaPadrao,
-      source: "Sistema",
-      sourceRow: 'Resposta Padrão',
-      modo: 'offline',
-      nivel: 3,
-      aviso: 'Sistema em modo offline - conectividade limitada'
-    });
+  return res.status(500).json({
+    status: "erro_sem_dados",
+    resposta: "Sistema temporariamente indisponível. Tente novamente em alguns instantes.",
+    source: "Sistema",
+    sourceRow: 'Erro',
+    modo: 'offline',
+    nivel: 3,
+    aviso: 'Sistema indisponível - sem acesso à base de dados'
+  });
     
   } catch (error) {
     console.error('❌ Erro crítico em processAskRequest:', error);
     return res.status(500).json({
       status: "erro_critico",
-      resposta: "Desculpe, ocorreu um erro interno. Tente novamente em alguns instantes.",
+      resposta: "Erro interno do sistema. Tente novamente.",
       source: "Sistema",
       error: error.message
     });
