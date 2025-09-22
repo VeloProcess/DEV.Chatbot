@@ -671,8 +671,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!textoDaPergunta.trim()) return;
             showTypingIndicator();
             try {
-        // Usar endpoint de debug temporariamente
-        const url = `/api/ask-debug?pergunta=${encodeURIComponent(textoDaPergunta)}&email=${encodeURIComponent(dadosAtendente.email)}`;
+        // Usar ask-simple (funciona com Google Sheets)
+        const url = `/api/ask-simple?pergunta=${encodeURIComponent(textoDaPergunta)}&email=${encodeURIComponent(dadosAtendente.email)}`;
                 console.log('🔍 Buscando resposta:', url);
                 const response = await fetch(url);
                 hideTypingIndicator();
