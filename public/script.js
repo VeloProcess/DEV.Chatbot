@@ -1390,7 +1390,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const voiceBtn = document.getElementById('voice-button');
             if (voiceBtn) {
                 // Configurar botão de voz - EM BREVE
-                voiceBtn.innerHTML = '🎤 EM BREVE';
+                voiceBtn.innerHTML = '🎤';
                 voiceBtn.classList.add('voice-btn-disabled');
                 voiceBtn.onclick = function() {
                     console.log('🎤 Botão de voz desabilitado - EM BREVE');
@@ -1407,7 +1407,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const playBtn = document.getElementById('play-response');
             if (playBtn) {
                 // Configurar botão de play - EM BREVE
-                playBtn.innerHTML = '🔊 EM BREVE';
+                playBtn.innerHTML = '🔊';
                 playBtn.classList.add('voice-btn-disabled');
                 playBtn.onclick = function() {
                     console.log('🔊 Botão de play desabilitado - EM BREVE');

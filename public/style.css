@@ -1818,20 +1818,22 @@ body.dark-theme .voice-selector:focus {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 35px;
-    height: 60px;
+    width: 40px;
+    height: 70px;
     background: linear-gradient(135deg, #667eea, #764ba2);
     border: none;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 10px 10px 0;
     color: white;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
     z-index: 1000;
     transition: all 0.3s ease;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    box-shadow: 3px 0 12px rgba(0,0,0,0.3);
     display: flex;
     align-items: center;
     justify-content: center;
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .expand-btn:hover {
@@ -1841,25 +1843,27 @@ body.dark-theme .voice-selector:focus {
 }
 
 .expand-left {
-    right: -35px;
-    border-radius: 0 8px 8px 0;
+    right: -40px;
+    border-radius: 0 10px 10px 0;
 }
 
 .expand-right {
-    left: -35px;
-    border-radius: 8px 0 0 8px;
+    left: -40px;
+    border-radius: 10px 0 0 10px;
 }
 
 /* Quando a sidebar está colapsada, mostrar o botão */
 .sidebar-collapsed .expand-btn {
-    opacity: 1;
-    pointer-events: auto;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    display: flex !important;
 }
 
 /* Quando a sidebar está expandida, esconder o botão */
 .sidebar-expanded .expand-btn {
-    opacity: 0;
-    pointer-events: none;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    display: none !important;
 }
 
 .collapse-btn {
@@ -1929,6 +1933,28 @@ body.dark-theme .voice-selector:focus {
     border-color: #7f8c8d !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+.voice-btn-disabled::after {
+    content: 'EM BREVE';
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1001;
+}
+
+.voice-btn-disabled:hover::after {
+    opacity: 1;
 }
 
 /* Responsividade para abas expansíveis */
