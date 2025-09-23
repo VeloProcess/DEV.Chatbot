@@ -484,15 +484,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const productItem = document.createElement('div');
                     productItem.className = 'product-status-item-header';
                     
-                    // Determinar classe de status
-                    if (p.status === 'Disponível') {
-                        productItem.classList.add('status-disponivel');
-                    } else if (p.status === 'Manutenção') {
-                        productItem.classList.add('status-manutencao');
-                    } else {
-                        productItem.classList.add('status-indisponivel');
-                    }
-                    
                     productItem.innerHTML = `
                         <span class="product-name">${p.produto}</span>
                         <span class="product-status">${p.status}</span>

@@ -102,17 +102,22 @@
 
         <div class="chat-container panel">
             <div class="chat-header"> 
-                <img src="https://github.com/VeloProcess/PDP-Portal-de-Processos-/blob/main/unnamed%20(2).png?raw=true" alt="Logo" class="chat-logo">
-                <h2 class="chat-title"> Veloprocess <span class="status-indicator"></span></h2> 
-                <div class="connectivity-indicator" id="connectivity-indicator" title="Status da conectividade">
-                    <i class='bx bx-wifi' id="wifi-icon"></i>
-                    <span id="connectivity-text">Conectado</span>
+                <div class="header-top">
+                    <div class="header-left">
+                        <img src="https://github.com/VeloProcess/PDP-Portal-de-Processos-/blob/main/unnamed%20(2).png?raw=true" alt="Logo" class="chat-logo">
+                        <h2 class="chat-title"> Veloprocess <span class="status-indicator"></span></h2> 
+                    </div>
+                    <div class="header-right">
+                        <div class="connectivity-indicator" id="connectivity-indicator" title="Status da conectividade">
+                            <i class='bx bx-wifi' id="wifi-icon"></i>
+                            <span id="connectivity-text">Conectado</span>
+                        </div>
+                        <button id="theme-switcher" title="Alterar tema">☀︎</button>
+                    </div>
                 </div>
-                <button id="theme-switcher" title="Alterar tema">☀︎</button>
                 
-                <!-- Status dos Produtos no Header -->
+                <!-- Status dos Produtos ao lado da logo -->
                 <div class="product-status-header">
-                    <h3>Status dos Produtos</h3>
                     <div id="product-status-container-header">
                         <div class="product-status-skeleton skeleton"></div>
                         <div class="product-status-skeleton skeleton"></div>

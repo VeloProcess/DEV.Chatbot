@@ -89,8 +89,8 @@ body.dark-theme {
 /* --- 🌐 ESTILOS GLOBAIS E FUNDO 🌐 --- */
 body {
     font-family: 'Segoe UI', 'Arial', sans-serif;
-    background-color: #F3F7FC;
-    color: #272A30;
+    background-color: #F5F7FA;
+    color: #2C3E50;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -253,87 +253,83 @@ body.dark-theme #feedback-cancel {
 .chat-header {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
     padding: 20px;
     background: #FFFFFF;
-    color: #272A30;
+    color: #2C3E50;
     position: relative;
     flex-shrink: 0;
-    border-bottom: 1px solid #F3F7FC;
+    border-bottom: 1px solid #E0E8F7;
 }
 
-/* Status dos Produtos no Header */
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Status dos Produtos ao lado da logo */
 .product-status-header {
-    margin-top: 15px;
     width: 100%;
-    max-width: 400px;
-}
-
-.product-status-header h3 {
-    margin: 0 0 10px 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #272A30;
 }
 
 #product-status-container-header {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .product-status-item-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 8px 12px;
-    background: #F3F7FC;
-    border-radius: 8px;
-    border-left: 4px solid #15A237;
-    font-size: 13px;
+    gap: 8px;
+    padding: 6px 12px;
+    background: #E3F2FD;
+    border-radius: 20px;
+    border: 1px solid #2196F3;
+    font-size: 12px;
     transition: all 0.3s ease;
 }
 
 .product-status-item-header:hover {
-    background: #E8F4FD;
+    background: #BBDEFB;
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.product-status-item-header.status-indisponivel {
-    border-left-color: #FCC200;
-}
-
-.product-status-item-header.status-manutencao {
-    border-left-color: #006AB9;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
 }
 
 .product-status-item-header .product-name {
     font-weight: 600;
-    color: #272A30;
+    color: #1976D2;
 }
 
 .product-status-item-header .product-status {
     font-weight: 500;
-    color: #15A237;
-}
-
-.product-status-item-header.status-indisponivel .product-status {
-    color: #FCC200;
-}
-
-.product-status-item-header.status-manutencao .product-status {
-    color: #006AB9;
+    color: #1976D2;
+    padding: 2px 6px;
+    background: #2196F3;
+    color: white;
+    border-radius: 10px;
+    font-size: 10px;
 }
 
 .chat-logo {
-    width: 80px;
-    height: 80px;
-    margin-bottom: var(--espaco-sm);
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     object-fit: contain;
-    background: #1634FF;
+    background: #2196F3;
     padding: var(--espaco-xs);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -342,7 +338,7 @@ body.dark-theme #feedback-cancel {
     margin: 0;
     font-size: 24px;
     font-weight: 700;
-    color: #272A30;
+    color: #2C3E50;
 }
 
 .status-indicator {
@@ -350,7 +346,7 @@ body.dark-theme #feedback-cancel {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #15A237;
+    background-color: #2196F3;
     margin-left: 8px;
     animation: pulse 2s infinite;
 }
@@ -466,7 +462,7 @@ body.dark-theme #feedback-cancel {
     gap: 12px;
     padding: 20px;
     background-color: #FFFFFF;
-    border-top: 1px solid #F3F7FC;
+    border-top: 1px solid #E0E8F7;
     position: relative;
     flex-shrink: 0;
     flex-wrap: wrap;
@@ -476,9 +472,9 @@ body.dark-theme #feedback-cancel {
     flex-grow: 1;
     padding: 12px 18px;
     border-radius: 24px;
-    border: 1px solid #F3F7FC;
-    background-color: #F3F7FC;
-    color: #272A30;
+    border: 1px solid #E0E8F7;
+    background-color: #F5F7FA;
+    color: #2C3E50;
     font-size: 15px;
     outline: none;
     transition: var(--transicao-normal);
@@ -506,7 +502,7 @@ body.dark-theme #feedback-cancel {
 }
 
 .action-button {
-    background-color: #1634FF;
+    background-color: #2196F3;
     color: white;
 }
 .action-button:hover {
