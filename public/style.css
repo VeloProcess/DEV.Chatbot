@@ -260,7 +260,7 @@ body.dark-theme #feedback-cancel {
     display: flex;
     flex-direction: column;
     padding: var(--espaco-lg);
-    background: linear-gradient(135deg, var(--cor-azul-medio) 0%, var(--cor-azul-escuro) 100%);
+    background: #1634FF;
     color: var(--cor-texto-claro);
     position: relative;
     flex-shrink: 0;
@@ -2252,6 +2252,12 @@ body.dark-theme .voice-selector:focus {
     letter-spacing: 0.5px;
 }
 
+/* Cor branca para tema claro */
+body:not(.dark-theme) .product-button .product-name {
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
 .product-button .product-emoji {
     font-size: 20px;
     margin-left: 10px;
@@ -2307,6 +2313,15 @@ body.dark-theme .voice-selector:focus {
 
 .dark-theme .product-button.status-indisponivel:hover {
     background: rgba(244, 67, 54, 0.2);
+}
+
+/* Diminuir tamanho da fonte no tema escuro */
+.dark-theme .product-button .product-name {
+    font-size: 16px;
+}
+
+.dark-theme .product-button .product-emoji {
+    font-size: 18px;
 }
 
 /* ==================== CHAT CENTRALIZADO ==================== */
