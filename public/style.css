@@ -1815,20 +1815,20 @@ body.dark-theme .voice-selector:focus {
 
 /* --- 📱 ABAS LATERAIS EXPANSÍVEIS --- */
 .expand-btn {
-    position: fixed;
+    position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 45px;
-    height: 80px;
+    width: 35px;
+    height: 60px;
     background: linear-gradient(135deg, #667eea, #764ba2);
     border: none;
-    border-radius: 0 12px 12px 0;
+    border-radius: 0 8px 8px 0;
     color: white;
-    font-size: 20px;
+    font-size: 16px;
     cursor: pointer;
     z-index: 1000;
     transition: all 0.3s ease;
-    box-shadow: 3px 0 15px rgba(0,0,0,0.3);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1841,13 +1841,25 @@ body.dark-theme .voice-selector:focus {
 }
 
 .expand-left {
-    left: 0;
-    border-radius: 0 12px 12px 0;
+    right: -35px;
+    border-radius: 0 8px 8px 0;
 }
 
 .expand-right {
-    right: 0;
-    border-radius: 12px 0 0 12px;
+    left: -35px;
+    border-radius: 8px 0 0 8px;
+}
+
+/* Quando a sidebar está colapsada, mostrar o botão */
+.sidebar-collapsed .expand-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Quando a sidebar está expandida, esconder o botão */
+.sidebar-expanded .expand-btn {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .collapse-btn {
@@ -1885,6 +1897,7 @@ body.dark-theme .voice-selector:focus {
     border: none;
     margin: 0;
     padding: 0;
+    position: relative;
 }
 
 .sidebar-expanded {
@@ -1903,32 +1916,19 @@ body.dark-theme .voice-selector:focus {
 
 /* Botões de voz desabilitados */
 .voice-btn-disabled {
-    background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
-    cursor: not-allowed !important;
-    opacity: 0.7 !important;
+    background: linear-gradient(135deg, #bdc3c7, #95a5a6) !important;
+    cursor: pointer !important;
+    opacity: 0.8 !important;
     position: relative;
-    overflow: hidden;
-}
-
-.voice-btn-disabled::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
+    border: 2px solid #95a5a6 !important;
+    transition: all 0.3s ease !important;
 }
 
 .voice-btn-disabled:hover {
-    transform: none !important;
-    background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
+    background: linear-gradient(135deg, #a8b2b7, #7f8c8d) !important;
+    border-color: #7f8c8d !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
 }
 
 /* Responsividade para abas expansíveis */
