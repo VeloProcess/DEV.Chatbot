@@ -391,15 +391,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const body = document.body;
         const questionSearch = document.getElementById('question-search');
         const logoutButton = document.getElementById('logout-button');
-        const expandableHeader = document.getElementById('expandable-faq-header');
-        const moreQuestions = document.getElementById('more-questions');
-        
-        if (expandableHeader && moreQuestions) {
-            expandableHeader.addEventListener('click', () => {
-                moreQuestions.classList.toggle('hidden');
-                expandableHeader.classList.toggle('expanded');
-            });
-        }
         document.addEventListener('visibilitychange', () => {
             if (!dadosAtendente) return;
             if (document.visibilityState === 'visible') {
@@ -481,13 +472,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 container.innerHTML = '';
                 data.products.forEach(p => {
-                    const productItem = document.createElement('div');
-                    productItem.className = 'product-status-item-header';
+                    const productItem = document.createElement('button');
+                    productItem.className = 'product-status-item-header product-button';
+                    productItem.setAttribute('data-product', p.produto);
+                    
+                    // Adicionar classe baseada no status
+                    if (p.status === 'Disponível') {
+                        productItem.classList.add('status-disponivel');
+                    } else {
+                        productItem.classList.add('status-indisponivel');
+                    }
                     
                     productItem.innerHTML = `
                         <span class="product-name">${p.produto}</span>
                         <span class="product-status">${p.status}</span>
                     `;
+                    
+                    // Adicionar evento de clique
+                    productItem.addEventListener('click', () => {
+                        handleProductClick(p.produto);
+                    });
                     
                     container.appendChild(productItem);
                 });
@@ -858,6 +862,33 @@ document.addEventListener('DOMContentLoaded', () => {
         // Tornar funções globais para onclick
         window.handleFollowUp = handleFollowUp;
         window.handleSugestaoRelacionada = handleSugestaoRelacionada;
+
+        // ==================== FUNÇÃO DE CLIQUE EM PRODUTOS ====================
+        
+        function handleProductClick(productName) {
+            console.log(`🛍️ Produto clicado: ${productName}`);
+            
+            // Mapear produtos para comandos específicos
+            const productCommands = {
+                'Antecipação': 'antecipação',
+                'Crédito pessoal': 'crédito pessoal',
+                'Crédito do trabalhador': 'crédito do trabalhador',
+                'Liquidação antecipada': 'liquidação antecipada'
+            };
+            
+            const command = productCommands[productName] || productName.toLowerCase();
+            
+            // Adicionar mensagem do usuário simulando a pergunta
+            addMessage(`Informações sobre ${productName}`, 'user');
+            
+            // Buscar resposta sobre o produto
+            buscarResposta(command);
+            
+            // Scroll para baixo para mostrar a resposta
+            setTimeout(() => {
+                scrollToBottom();
+            }, 100);
+        }
 
         // ==================== FUNCIONALIDADES DE VOZ ====================
 
@@ -1379,7 +1410,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setupVoiceButton();
             setupPlayButton();
             setupStopButton();
-            setupExpandableSidebars();
         }, 1000);
     });
 
@@ -1428,65 +1458,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // ==================== ABAS LATERAIS EXPANSÍVEIS ====================
-        
-        // Configurar abas laterais expansíveis
-        function setupExpandableSidebars() {
-            const leftSidebar = document.getElementById('sidebar');
-            const rightSidebar = document.getElementById('news-panel');
-            const expandLeftBtn = document.getElementById('expand-left-sidebar');
-            const expandRightBtn = document.getElementById('expand-right-sidebar');
-            const collapseLeftBtn = document.getElementById('collapse-left-sidebar');
-            const collapseRightBtn = document.getElementById('collapse-right-sidebar');
-
-            // Função toggle para sidebar esquerda
-            function toggleLeftSidebar() {
-                if (leftSidebar.classList.contains('sidebar-collapsed')) {
-                    leftSidebar.classList.remove('sidebar-collapsed');
-                    leftSidebar.classList.add('sidebar-expanded');
-                    console.log('📂 Sidebar esquerda expandida');
-                } else {
-                    leftSidebar.classList.remove('sidebar-expanded');
-                    leftSidebar.classList.add('sidebar-collapsed');
-                    console.log('📁 Sidebar esquerda colapsada');
-                }
-            }
-
-            // Função toggle para sidebar direita
-            function toggleRightSidebar() {
-                if (rightSidebar.classList.contains('sidebar-collapsed')) {
-                    rightSidebar.classList.remove('sidebar-collapsed');
-                    rightSidebar.classList.add('sidebar-expanded');
-                    console.log('📂 Sidebar direita expandida');
-                } else {
-                    rightSidebar.classList.remove('sidebar-expanded');
-                    rightSidebar.classList.add('sidebar-collapsed');
-                    console.log('📁 Sidebar direita colapsada');
-                }
-            }
-
-            // Botão de expansão esquerda - toggle
-            if (expandLeftBtn && leftSidebar) {
-                expandLeftBtn.addEventListener('click', toggleLeftSidebar);
-            }
-
-            // Botão de colapso esquerda - toggle
-            if (collapseLeftBtn && leftSidebar) {
-                collapseLeftBtn.addEventListener('click', toggleLeftSidebar);
-            }
-
-            // Botão de expansão direita - toggle
-            if (expandRightBtn && rightSidebar) {
-                expandRightBtn.addEventListener('click', toggleRightSidebar);
-            }
-
-            // Botão de colapso direita - toggle
-            if (collapseRightBtn && rightSidebar) {
-                collapseRightBtn.addEventListener('click', toggleRightSidebar);
-            }
-
-            console.log('✅ Abas laterais expansíveis configuradas - Toggle completo implementado');
-        }
 
         
 
@@ -1499,9 +1470,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         sendButton.addEventListener('click', () => handleSendMessage(userInput.value));
 
-        document.querySelectorAll('#sidebar li[data-question]').forEach(item => {
-            item.addEventListener('click', (e) => handleSendMessage(e.currentTarget.getAttribute('data-question')));
-        });
 
 const feedbackOverlay = document.getElementById('feedback-overlay');
 const feedbackSendBtn = document.getElementById('feedback-send');

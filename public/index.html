@@ -33,44 +33,6 @@
     </div>
 
     <div class="app-wrapper hidden">
-        <!-- Botão para expandir sidebar esquerda -->
-        <button id="expand-left-sidebar" class="expand-btn expand-left">
-            <i class='bx bx-arrow-from-left-stroke'></i>
-        </button>
-        
-        <div id="sidebar" class="panel sidebar-collapsed">
-            <div class="panel-header">
-                <h2>Perguntas Frequentes</h2>
-                <button id="collapse-left-sidebar" class="collapse-btn">
-                    <i class='bx bx-arrow-from-right-stroke'></i>
-                </button>
-            </div>
-            <div class="sidebar-content">
-                <div class="question-category">Mais Comuns!!!</div>
-                <ul id="quick-questions-list">
-                    <li data-question="Crédito ">Sobre Crédito </li>
-                    <li data-question="Antecipação">Sobre Antecipação</li>
-                    <li data-question="Pix">Portabilidade/Pix</li>
-                    <li data-question="Veloprime">Veloprime</li>
-                </ul>
-
-                <div id="expandable-faq-container">
-                    <div id="expandable-faq-header" class="expandable-header">
-                        <span>Outras Perguntas</span>
-                        <span class="arrow">▶</span>
-                    </div>
-                    <div id="more-questions" class="hidden">
-                        <div class="question-category">Frequentes</div>
-                        <ul id="more-questions-list-frequentes">
-                            <li data-question="Vencimento do contrato">Vencimento do contrato</li>
-                            <li data-question="Casos Especiais">Escalar para Casos Especiais</li>
-                            <li data-question="Desconto proporcional">Desconto proporcional</li>
-                            <li data-question="Qual o prazo para a restituição?">Qual o prazo para a restituição?</li>
-                            <li data-question="Velobank ">Velobank</li>
-                    </div>
-                </div>
-            </div>
-        </div>
         
         <div id="curadoria-overlay" class="hidden">
             <div id="curadoria-box">
@@ -178,17 +140,10 @@
                 </div>
             </div>
         </div>
-        <!-- Botão para expandir sidebar direita -->
-        <button id="expand-right-sidebar" class="expand-btn expand-right">
-            <i class='bx bx-arrow-from-left-stroke'></i>
-        </button>
-        
-        <div id="news-panel" class="panel sidebar-collapsed">
+        <!-- Painel de Notícias Fixo -->
+        <div id="news-panel" class="panel news-panel-fixed">
             <div class="panel-header">
                 <h2>Notícias e Alertas</h2>
-                <button id="collapse-right-sidebar" class="collapse-btn">
-                    <i class='bx bx-arrow-out-up-right-stroke-circle'></i>
-                </button>
             </div>
             <div id="news-list" class="news-list">
                 <div class="news-item-skeleton">
