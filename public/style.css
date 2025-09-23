@@ -82,7 +82,6 @@ body.dark-theme {
     --cor-destaque-claro: #2c3e50; /* Cor de fundo sutil (balão do bot dark) */
     --cor-texto-claro: #e0e0e0; /* Texto claro para dark theme */
     --cor-fundo-card: #2a2a2a; /* Fundo para cards/perguntas dark theme */
-
 }
 
 
@@ -332,6 +331,29 @@ body.dark-theme #feedback-cancel {
     color: var(--cor-azul-medio);
 }
 
+/* Tema escuro para produtos no header */
+body.dark-theme .product-status-item-header {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.dark-theme .product-status-item-header:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-theme .product-status-item-header .product-name {
+    color: var(--cor-texto-claro);
+}
+
+body.dark-theme .product-status-item-header .product-status {
+    background: var(--cor-texto-claro);
+    color: var(--cor-azul-medio);
+}
+
+body.dark-theme .product-status-item-header:hover .product-name {
+    color: var(--cor-azul-medio);
+}
+
 .chat-logo {
     width: 80px;
     height: 80px;
@@ -490,6 +512,20 @@ body.dark-theme #feedback-cancel {
 .welcome-message .emoji {
     font-size: 24px;
     margin-right: var(--espaco-sm);
+}
+
+/* Tema escuro para mensagem de boas-vindas */
+body.dark-theme .welcome-message {
+    background: var(--cor-container);
+    border-left-color: var(--cor-azul-medio);
+}
+
+body.dark-theme .welcome-message h3 {
+    color: var(--cor-azul-medio);
+}
+
+body.dark-theme .welcome-message p {
+    color: var(--cor-texto-principal);
 }
 
 
