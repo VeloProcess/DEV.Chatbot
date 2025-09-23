@@ -1818,48 +1818,55 @@ body.dark-theme .voice-selector:focus {
     position: fixed;
     top: 50%;
     transform: translateY(-50%);
-    width: 40px;
-    height: 60px;
+    width: 45px;
+    height: 80px;
     background: linear-gradient(135deg, #667eea, #764ba2);
     border: none;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 12px 12px 0;
     color: white;
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
     z-index: 1000;
     transition: all 0.3s ease;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    box-shadow: 3px 0 15px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .expand-btn:hover {
     background: linear-gradient(135deg, #5a6fd8, #6a4190);
     transform: translateY(-50%) scale(1.05);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.4);
 }
 
 .expand-left {
     left: 0;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 12px 12px 0;
 }
 
 .expand-right {
     right: 0;
-    border-radius: 8px 0 0 8px;
+    border-radius: 12px 0 0 12px;
 }
 
 .collapse-btn {
-    background: none;
-    border: none;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
     color: #666;
     font-size: 16px;
     cursor: pointer;
-    padding: 5px;
-    border-radius: 4px;
+    padding: 8px 12px;
+    border-radius: 6px;
     transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
 }
 
 .collapse-btn:hover {
-    background: rgba(0,0,0,0.1);
+    background: rgba(255,255,255,0.2);
     color: #333;
+    border-color: rgba(255,255,255,0.3);
+    transform: scale(1.05);
 }
 
 .panel-header {
@@ -1871,19 +1878,57 @@ body.dark-theme .voice-selector:focus {
 .sidebar-collapsed {
     width: 0 !important;
     min-width: 0 !important;
+    max-width: 0 !important;
     overflow: hidden;
-    transition: width 0.3s ease;
+    opacity: 0;
+    transition: all 0.3s ease;
+    border: none;
+    margin: 0;
+    padding: 0;
 }
 
 .sidebar-expanded {
-    width: 300px !important;
-    min-width: 300px !important;
-    transition: width 0.3s ease;
+    width: 320px !important;
+    min-width: 320px !important;
+    max-width: 320px !important;
+    opacity: 1;
+    transition: all 0.3s ease;
+    overflow: visible;
 }
 
 /* Esconder botões de expansão quando as abas estão abertas */
 .sidebar-expanded + .expand-btn {
     display: none;
+}
+
+/* Botões de voz desabilitados */
+.voice-btn-disabled {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.voice-btn-disabled::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.voice-btn-disabled:hover {
+    transform: none !important;
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
 }
 
 /* Responsividade para abas expansíveis */

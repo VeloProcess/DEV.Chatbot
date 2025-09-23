@@ -1391,9 +1391,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (voiceBtn) {
                 // Desabilitar botão de voz - EM BREVE
                 voiceBtn.innerHTML = '🎤 EM BREVE';
-                voiceBtn.style.background = 'linear-gradient(135deg, #95a5a6, #7f8c8d)';
-                voiceBtn.style.cursor = 'not-allowed';
-                voiceBtn.style.opacity = '0.6';
+                voiceBtn.classList.add('voice-btn-disabled');
                 voiceBtn.disabled = true;
                 voiceBtn.onclick = function() {
                     console.log('🎤 Botão de voz desabilitado - EM BREVE');
@@ -1411,9 +1409,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (playBtn) {
                 // Desabilitar botão de play - EM BREVE
                 playBtn.innerHTML = '🔊 EM BREVE';
-                playBtn.style.background = 'linear-gradient(135deg, #95a5a6, #7f8c8d)';
-                playBtn.style.cursor = 'not-allowed';
-                playBtn.style.opacity = '0.6';
+                playBtn.classList.add('voice-btn-disabled');
                 playBtn.disabled = true;
                 playBtn.onclick = function() {
                     console.log('🔊 Botão de play desabilitado - EM BREVE');
@@ -1451,7 +1447,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 expandLeftBtn.addEventListener('click', function() {
                     leftSidebar.classList.remove('sidebar-collapsed');
                     leftSidebar.classList.add('sidebar-expanded');
-                    expandLeftBtn.style.display = 'none';
+                    expandLeftBtn.style.opacity = '0';
+                    expandLeftBtn.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        expandLeftBtn.style.display = 'none';
+                    }, 300);
                     console.log('📂 Sidebar esquerda expandida');
                 });
             }
@@ -1461,7 +1461,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 collapseLeftBtn.addEventListener('click', function() {
                     leftSidebar.classList.remove('sidebar-expanded');
                     leftSidebar.classList.add('sidebar-collapsed');
-                    expandLeftBtn.style.display = 'block';
+                    expandLeftBtn.style.display = 'flex';
+                    expandLeftBtn.style.opacity = '1';
+                    expandLeftBtn.style.pointerEvents = 'auto';
                     console.log('📁 Sidebar esquerda colapsada');
                 });
             }
@@ -1471,7 +1473,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 expandRightBtn.addEventListener('click', function() {
                     rightSidebar.classList.remove('sidebar-collapsed');
                     rightSidebar.classList.add('sidebar-expanded');
-                    expandRightBtn.style.display = 'none';
+                    expandRightBtn.style.opacity = '0';
+                    expandRightBtn.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        expandRightBtn.style.display = 'none';
+                    }, 300);
                     console.log('📂 Sidebar direita expandida');
                 });
             }
@@ -1481,7 +1487,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 collapseRightBtn.addEventListener('click', function() {
                     rightSidebar.classList.remove('sidebar-expanded');
                     rightSidebar.classList.add('sidebar-collapsed');
-                    expandRightBtn.style.display = 'block';
+                    expandRightBtn.style.display = 'flex';
+                    expandRightBtn.style.opacity = '1';
+                    expandRightBtn.style.pointerEvents = 'auto';
                     console.log('📁 Sidebar direita colapsada');
                 });
             }
