@@ -2318,6 +2318,7 @@ body:not(.dark-theme) .product-button .product-name {
 /* Manter mesmo tamanho nos dois temas */
 .dark-theme .product-button .product-name {
     font-size: 18px;
+    color: #1634FF;
 }
 
 .dark-theme .product-button .product-emoji {
