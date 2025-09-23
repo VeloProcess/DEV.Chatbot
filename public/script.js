@@ -1216,67 +1216,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return isAdminUser;
         }
 
-        // Mostrar/ocultar botão de admin
-        function toggleAdminButton() {
-            const adminBtn = document.getElementById('admin-panel-btn');
-            console.log('🔧 toggleAdminButton chamado:', {
-                adminBtn: !!adminBtn,
-                dadosAtendente: !!dadosAtendente,
-                funcao: dadosAtendente?.funcao,
-                email: dadosAtendente?.email
-            });
-            
-            if (adminBtn) {
-                if (isAdmin()) {
-                    adminBtn.classList.remove('hidden');
-                    console.log('✅ Botão de admin mostrado para:', dadosAtendente.funcao);
-                } else {
-                    adminBtn.classList.add('hidden');
-                    console.log('❌ Botão de admin ocultado para:', dadosAtendente?.funcao || 'função não encontrada');
-                }
-            } else {
-                console.error('❌ Botão admin-panel-btn não encontrado no DOM');
-            }
-        }
+        // Função removida - botão de admin desabilitado temporariamente
 
-        // Inicializar painel administrativo
-        function initAdminPanel() {
-            const adminBtn = document.getElementById('admin-panel-btn');
-            const adminPanel = document.getElementById('admin-panel');
-            const closeBtn = document.getElementById('close-admin-panel');
-            const refreshBtn = document.getElementById('refresh-users');
-            const forceLogoutBtn = document.getElementById('force-logout-btn');
-
-            console.log('🔧 initAdminPanel chamado:', {
-                adminBtn: !!adminBtn,
-                adminPanel: !!adminPanel,
-                closeBtn: !!closeBtn,
-                refreshBtn: !!refreshBtn,
-                forceLogoutBtn: !!forceLogoutBtn
-            });
-
-            if (adminBtn) {
-                adminBtn.addEventListener('click', () => {
-                    console.log('🔧 Botão de admin clicado');
-                    adminPanel.classList.remove('hidden');
-                    loadOnlineUsers();
-                });
-            }
-
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    adminPanel.classList.add('hidden');
-                });
-            }
-
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', loadOnlineUsers);
-            }
-
-            if (forceLogoutBtn) {
-                forceLogoutBtn.addEventListener('click', forceLogoutUser);
-            }
-        }
+        // Função removida - painel administrativo desabilitado temporariamente
 
         // Carregar usuários online
         async function loadOnlineUsers() {
@@ -1384,8 +1326,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setupPlayButton();
             setupStopButton();
             
-            // Inicializar painel administrativo
-            initAdminPanel();
+            // Painel administrativo desabilitado temporariamente
             
             // Carregar vozes
             loadAvailableVoices();
@@ -1458,52 +1399,50 @@ document.addEventListener('DOMContentLoaded', () => {
             const collapseLeftBtn = document.getElementById('collapse-left-sidebar');
             const collapseRightBtn = document.getElementById('collapse-right-sidebar');
 
-            // Toggle sidebar esquerda (botão de expansão)
-            if (expandLeftBtn && leftSidebar) {
-                expandLeftBtn.addEventListener('click', function() {
-                    if (leftSidebar.classList.contains('sidebar-collapsed')) {
-                        leftSidebar.classList.remove('sidebar-collapsed');
-                        leftSidebar.classList.add('sidebar-expanded');
-                        console.log('📂 Sidebar esquerda expandida');
-                    } else {
-                        leftSidebar.classList.remove('sidebar-expanded');
-                        leftSidebar.classList.add('sidebar-collapsed');
-                        console.log('📁 Sidebar esquerda colapsada');
-                    }
-                });
-            }
-
-            // Toggle sidebar esquerda (botão de colapso)
-            if (collapseLeftBtn && leftSidebar) {
-                collapseLeftBtn.addEventListener('click', function() {
+            // Função toggle para sidebar esquerda
+            function toggleLeftSidebar() {
+                if (leftSidebar.classList.contains('sidebar-collapsed')) {
+                    leftSidebar.classList.remove('sidebar-collapsed');
+                    leftSidebar.classList.add('sidebar-expanded');
+                    console.log('📂 Sidebar esquerda expandida');
+                } else {
                     leftSidebar.classList.remove('sidebar-expanded');
                     leftSidebar.classList.add('sidebar-collapsed');
                     console.log('📁 Sidebar esquerda colapsada');
-                });
+                }
             }
 
-            // Toggle sidebar direita (botão de expansão)
-            if (expandRightBtn && rightSidebar) {
-                expandRightBtn.addEventListener('click', function() {
-                    if (rightSidebar.classList.contains('sidebar-collapsed')) {
-                        rightSidebar.classList.remove('sidebar-collapsed');
-                        rightSidebar.classList.add('sidebar-expanded');
-                        console.log('📂 Sidebar direita expandida');
-                    } else {
-                        rightSidebar.classList.remove('sidebar-expanded');
-                        rightSidebar.classList.add('sidebar-collapsed');
-                        console.log('📁 Sidebar direita colapsada');
-                    }
-                });
-            }
-
-            // Toggle sidebar direita (botão de colapso)
-            if (collapseRightBtn && rightSidebar) {
-                collapseRightBtn.addEventListener('click', function() {
+            // Função toggle para sidebar direita
+            function toggleRightSidebar() {
+                if (rightSidebar.classList.contains('sidebar-collapsed')) {
+                    rightSidebar.classList.remove('sidebar-collapsed');
+                    rightSidebar.classList.add('sidebar-expanded');
+                    console.log('📂 Sidebar direita expandida');
+                } else {
                     rightSidebar.classList.remove('sidebar-expanded');
                     rightSidebar.classList.add('sidebar-collapsed');
                     console.log('📁 Sidebar direita colapsada');
-                });
+                }
+            }
+
+            // Botão de expansão esquerda - toggle
+            if (expandLeftBtn && leftSidebar) {
+                expandLeftBtn.addEventListener('click', toggleLeftSidebar);
+            }
+
+            // Botão de colapso esquerda - toggle
+            if (collapseLeftBtn && leftSidebar) {
+                collapseLeftBtn.addEventListener('click', toggleLeftSidebar);
+            }
+
+            // Botão de expansão direita - toggle
+            if (expandRightBtn && rightSidebar) {
+                expandRightBtn.addEventListener('click', toggleRightSidebar);
+            }
+
+            // Botão de colapso direita - toggle
+            if (collapseRightBtn && rightSidebar) {
+                collapseRightBtn.addEventListener('click', toggleRightSidebar);
             }
 
             console.log('✅ Abas laterais expansíveis configuradas');
@@ -1599,10 +1538,7 @@ if (feedbackSendBtn) {
         carregarNoticias();
         carregarStatusProdutos();
         
-        // Mostrar botão de admin se for admin
-        setTimeout(() => {
-            toggleAdminButton();
-        }, 1000); // Aguardar 1 segundo para garantir que o DOM esteja pronto
+        // Botão de admin desabilitado temporariamente
         
         // Inicializar indicador de conectividade
         initializeConnectivityIndicator();
