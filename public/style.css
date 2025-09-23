@@ -799,36 +799,43 @@ body.dark-theme .clarification-item:hover {
 
 /* --- ESTILO APRIMORADO PARA ITENS DE PERGUNTA CLICÁVEIS --- */
 #sidebar li[data-question] { /* Seletor universal para todas as perguntas clicáveis */
-    padding: 14px 16px;
-    border-radius: var(--borda-raio-sm);
-    margin-bottom: var(--espaco-sm);
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 12px;
     cursor: pointer;
-    transition: all var(--transicao-rapida);
-    font-size: 14px;
-    border: 1px solid var(--cor-borda);
-    background-color: var(--cor-fundo-card); /* Fundo sutil padrão */
+    transition: all 0.3s ease;
+    font-size: 16px;
+    font-weight: 600;
+    border: 2px solid var(--cor-borda);
+    background: linear-gradient(135deg, var(--cor-container) 0%, var(--cor-fundo-card) 100%);
     color: var(--cor-texto-principal);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.3px;
 }
 
 /* Garantir contraste adequado para perguntas frequentes */
 body:not(.dark-theme) #sidebar li[data-question] {
-    background-color: #f8f9fa;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     color: #212529;
-    border-color: #d1e3f0;
+    border-color: #1634FF;
+    box-shadow: 0 2px 8px rgba(22, 52, 255, 0.1);
 }
 
 body.dark-theme #sidebar li[data-question] {
-    background-color: #2a2a2a;
+    background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
     color: #e0e0e0;
-    border-color: #334a5f;
+    border-color: #1694FF;
+    box-shadow: 0 2px 8px rgba(22, 164, 255, 0.1);
 }
 
 #sidebar li[data-question]:hover {
-    background-color: var(--cor-destaque-claro); /* Cor de fundo ao passar o mouse */
-    color: var(--cor-destaque-forte); /* Cor do texto ao passar o mouse */
-    border-color: var(--cor-destaque);
-    transform: translateX(3px) scale(1.02); /* Efeito de destaque mais pronunciado */
-    box-shadow: 0 4px 10px var(--cor-sombra); /* Sombra mais visível */
+    background: linear-gradient(135deg, #1634FF 0%, #1694FF 100%);
+    color: #ffffff;
+    border-color: #000058;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(22, 52, 255, 0.3);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .expandable-header {
