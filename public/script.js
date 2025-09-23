@@ -1448,6 +1448,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('✅ Abas laterais expansíveis configuradas - Toggle completo implementado');
         }
 
+        
 
 
         userInput.addEventListener('keydown', (e) => {
