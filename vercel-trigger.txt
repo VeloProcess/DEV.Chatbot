@@ -4,3 +4,4 @@
 # Status: Botão admin removido, toggle completo implementado
 # Versão: 2.0 - Sistema completo atualizado
 # Teste: Verificando se Vercel detecta as mudanças
+#teste novo
