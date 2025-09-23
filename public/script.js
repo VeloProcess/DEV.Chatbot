@@ -1445,7 +1445,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 collapseRightBtn.addEventListener('click', toggleRightSidebar);
             }
 
-            console.log('✅ Abas laterais expansíveis configuradas');
+            console.log('✅ Abas laterais expansíveis configuradas - Toggle completo implementado');
         }
 
 
