@@ -434,33 +434,75 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         async function carregarStatusProdutos() {
+            // Carregar produtos na sidebar (mantido para compatibilidade)
             const container = document.getElementById('product-status-container');
+            if (container) {
+                try {
+                    const response = await fetch('/api/getProductStatus');
+                    if (!response.ok) throw new Error('API falhou');
+                    const data = await response.json();
+                    const productList = document.createElement('ul');
+                    productList.style.padding = '0';
+                    data.products.forEach(p => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'product-status-item';
+                        const statusSpan = document.createElement('span');
+                        statusSpan.className = 'status';
+                        statusSpan.textContent = p.status;
+                        if (p.status === 'Disponível') {
+                            statusSpan.classList.add('status-disponivel');
+                        } else {
+                            statusSpan.classList.add('status-indisponivel');
+                        }
+                        listItem.textContent = `${p.produto} `;
+                        listItem.appendChild(statusSpan);
+                        productList.appendChild(listItem);
+                    });
+                    container.innerHTML = '';
+                    container.appendChild(productList);
+                } catch (error) {
+                    container.textContent = 'Erro ao carregar status.';
+                    console.error("Erro ao carregar status dos produtos:", error);
+                }
+            }
+            
+            // Carregar produtos no header
+            carregarStatusProdutosHeader();
+        }
+
+        async function carregarStatusProdutosHeader() {
+            const container = document.getElementById('product-status-container-header');
+            if (!container) return;
+            
             try {
                 const response = await fetch('/api/getProductStatus');
                 if (!response.ok) throw new Error('API falhou');
                 const data = await response.json();
-                const productList = document.createElement('ul');
-                productList.style.padding = '0';
-                data.products.forEach(p => {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'product-status-item';
-                    const statusSpan = document.createElement('span');
-                    statusSpan.className = 'status';
-                    statusSpan.textContent = p.status;
-                    if (p.status === 'Disponível') {
-                        statusSpan.classList.add('status-disponivel');
-                    } else {
-                        statusSpan.classList.add('status-indisponivel');
-                    }
-                    listItem.textContent = `${p.produto} `;
-                    listItem.appendChild(statusSpan);
-                    productList.appendChild(listItem);
-                });
+                
                 container.innerHTML = '';
-                container.appendChild(productList);
+                data.products.forEach(p => {
+                    const productItem = document.createElement('div');
+                    productItem.className = 'product-status-item-header';
+                    
+                    // Determinar classe de status
+                    if (p.status === 'Disponível') {
+                        productItem.classList.add('status-disponivel');
+                    } else if (p.status === 'Manutenção') {
+                        productItem.classList.add('status-manutencao');
+                    } else {
+                        productItem.classList.add('status-indisponivel');
+                    }
+                    
+                    productItem.innerHTML = `
+                        <span class="product-name">${p.produto}</span>
+                        <span class="product-status">${p.status}</span>
+                    `;
+                    
+                    container.appendChild(productItem);
+                });
             } catch (error) {
-                container.textContent = 'Erro ao carregar status.';
-                console.error("Erro ao carregar status dos produtos:", error);
+                console.error("Erro ao carregar status dos produtos no header:", error);
+                container.innerHTML = '<p>Não foi possível carregar o status dos produtos.</p>';
             }
         }
 

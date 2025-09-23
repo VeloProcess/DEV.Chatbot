@@ -89,8 +89,8 @@ body.dark-theme {
 /* --- 🌐 ESTILOS GLOBAIS E FUNDO 🌐 --- */
 body {
     font-family: 'Segoe UI', 'Arial', sans-serif;
-    background-color: #F5F7FA;
-    color: var(--cor-texto-principal);
+    background-color: #F3F7FC;
+    color: #272A30;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -257,10 +257,74 @@ body.dark-theme #feedback-cancel {
     text-align: center;
     padding: 20px;
     background: #FFFFFF;
-    color: #2C3E50;
+    color: #272A30;
     position: relative;
     flex-shrink: 0;
-    border-bottom: 1px solid #E0E8F7;
+    border-bottom: 1px solid #F3F7FC;
+}
+
+/* Status dos Produtos no Header */
+.product-status-header {
+    margin-top: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.product-status-header h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #272A30;
+}
+
+#product-status-container-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.product-status-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #F3F7FC;
+    border-radius: 8px;
+    border-left: 4px solid #15A237;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.product-status-item-header:hover {
+    background: #E8F4FD;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-status-item-header.status-indisponivel {
+    border-left-color: #FCC200;
+}
+
+.product-status-item-header.status-manutencao {
+    border-left-color: #006AB9;
+}
+
+.product-status-item-header .product-name {
+    font-weight: 600;
+    color: #272A30;
+}
+
+.product-status-item-header .product-status {
+    font-weight: 500;
+    color: #15A237;
+}
+
+.product-status-item-header.status-indisponivel .product-status {
+    color: #FCC200;
+}
+
+.product-status-item-header.status-manutencao .product-status {
+    color: #006AB9;
 }
 
 .chat-logo {
@@ -269,7 +333,7 @@ body.dark-theme #feedback-cancel {
     margin-bottom: var(--espaco-sm);
     border-radius: 50%;
     object-fit: contain;
-    background: white;
+    background: #1634FF;
     padding: var(--espaco-xs);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -278,7 +342,7 @@ body.dark-theme #feedback-cancel {
     margin: 0;
     font-size: 24px;
     font-weight: 700;
-    color: #2C3E50;
+    color: #272A30;
 }
 
 .status-indicator {
@@ -286,7 +350,7 @@ body.dark-theme #feedback-cancel {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #5CB85C;
+    background-color: #15A237;
     margin-left: 8px;
     animation: pulse 2s infinite;
 }
@@ -402,7 +466,7 @@ body.dark-theme #feedback-cancel {
     gap: 12px;
     padding: 20px;
     background-color: #FFFFFF;
-    border-top: 1px solid #E0E8F7;
+    border-top: 1px solid #F3F7FC;
     position: relative;
     flex-shrink: 0;
     flex-wrap: wrap;
@@ -412,9 +476,9 @@ body.dark-theme #feedback-cancel {
     flex-grow: 1;
     padding: 12px 18px;
     border-radius: 24px;
-    border: 1px solid #E0E8F7;
-    background-color: #F5F7FA;
-    color: #2C3E50;
+    border: 1px solid #F3F7FC;
+    background-color: #F3F7FC;
+    color: #272A30;
     font-size: 15px;
     outline: none;
     transition: var(--transicao-normal);
@@ -442,7 +506,7 @@ body.dark-theme #feedback-cancel {
 }
 
 .action-button {
-    background-color: #4A70E0;
+    background-color: #1634FF;
     color: white;
 }
 .action-button:hover {
