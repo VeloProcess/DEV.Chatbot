@@ -483,9 +483,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         productItem.classList.add('status-indisponivel');
                     }
                     
+                    // Determinar emoji baseado no status
+                    const emoji = p.status === 'Disponível' ? '🟢' : '🔴';
+                    
                     productItem.innerHTML = `
                         <span class="product-name">${p.produto}</span>
-                        <span class="product-status">${p.status}</span>
+                        <span class="product-emoji">${emoji}</span>
                     `;
                     
                     // Adicionar evento de clique
