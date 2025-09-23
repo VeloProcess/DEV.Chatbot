@@ -2272,6 +2272,17 @@ body.dark-theme .voice-selector:focus {
     box-shadow: 0 4px 16px rgba(39, 42, 48, 0.4);
 }
 
+/* ==================== CHAT CENTRALIZADO ==================== */
+
+.chat-container {
+    position: relative;
+    z-index: 1001;
+    margin: 0 auto;
+    max-width: 800px;
+    width: 100%;
+    padding: 20px;
+}
+
 /* ==================== SIDEBARS EXPANSÍVEIS ==================== */
 
 /* Botões de expansão */
