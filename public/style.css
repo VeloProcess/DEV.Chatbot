@@ -2301,12 +2301,26 @@ body.dark-theme .voice-selector:focus {
     box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
 }
 
+.dark-theme .product-button.status-disponivel {
+    background: linear-gradient(135deg, #15A237 0%, #15A237 100%);
+    border-left: 4px solid #15A237;
+}
+
 .dark-theme .product-button.status-disponivel:hover {
+    background: linear-gradient(135deg, #15A237 0%, #15A237 100%);
     box-shadow: 0 4px 16px rgba(21, 162, 55, 0.4);
 }
 
+.dark-theme .product-button.status-indisponivel {
+    background: linear-gradient(135deg, #f44336 0%, #f44336 100%);
+    border-left: 4px solid #f44336;
+    opacity: 0.8;
+}
+
 .dark-theme .product-button.status-indisponivel:hover {
+    background: linear-gradient(135deg, #f44336 0%, #f44336 100%);
     box-shadow: 0 4px 16px rgba(244, 67, 54, 0.4);
+    opacity: 1;
 }
 
 /* ==================== CHAT CENTRALIZADO ==================== */
