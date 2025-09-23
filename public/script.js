@@ -863,6 +863,66 @@ document.addEventListener('DOMContentLoaded', () => {
         window.handleFollowUp = handleFollowUp;
         window.handleSugestaoRelacionada = handleSugestaoRelacionada;
 
+        // ==================== ABAS LATERAIS EXPANSÍVEIS ====================
+        
+        // Configurar abas laterais expansíveis
+        function setupExpandableSidebars() {
+            const leftSidebar = document.getElementById('sidebar');
+            const rightSidebar = document.getElementById('news-panel');
+            const expandLeftBtn = document.getElementById('expand-left-sidebar');
+            const expandRightBtn = document.getElementById('expand-right-sidebar');
+            const collapseLeftBtn = document.getElementById('collapse-left-sidebar');
+            const collapseRightBtn = document.getElementById('collapse-right-sidebar');
+
+            // Função toggle para sidebar esquerda
+            function toggleLeftSidebar() {
+                if (leftSidebar.classList.contains('sidebar-collapsed')) {
+                    leftSidebar.classList.remove('sidebar-collapsed');
+                    leftSidebar.classList.add('sidebar-expanded');
+                    console.log('📂 Sidebar esquerda expandida');
+                } else {
+                    leftSidebar.classList.remove('sidebar-expanded');
+                    leftSidebar.classList.add('sidebar-collapsed');
+                    console.log('📁 Sidebar esquerda colapsada');
+                }
+            }
+
+            // Função toggle para sidebar direita
+            function toggleRightSidebar() {
+                if (rightSidebar.classList.contains('sidebar-collapsed')) {
+                    rightSidebar.classList.remove('sidebar-collapsed');
+                    rightSidebar.classList.add('sidebar-expanded');
+                    console.log('📂 Sidebar direita expandida');
+                } else {
+                    rightSidebar.classList.remove('sidebar-expanded');
+                    rightSidebar.classList.add('sidebar-collapsed');
+                    console.log('📁 Sidebar direita colapsada');
+                }
+            }
+
+            // Botão de expansão esquerda - toggle
+            if (expandLeftBtn && leftSidebar) {
+                expandLeftBtn.addEventListener('click', toggleLeftSidebar);
+            }
+
+            // Botão de colapso esquerda - toggle
+            if (collapseLeftBtn && leftSidebar) {
+                collapseLeftBtn.addEventListener('click', toggleLeftSidebar);
+            }
+
+            // Botão de expansão direita - toggle
+            if (expandRightBtn && rightSidebar) {
+                expandRightBtn.addEventListener('click', toggleRightSidebar);
+            }
+
+            // Botão de colapso direita - toggle
+            if (collapseRightBtn && rightSidebar) {
+                collapseRightBtn.addEventListener('click', toggleRightSidebar);
+            }
+
+            console.log('✅ Abas laterais expansíveis configuradas - Toggle completo implementado');
+        }
+
         // ==================== FUNÇÃO DE CLIQUE EM PRODUTOS ====================
         
         function handleProductClick(productName) {
@@ -1410,6 +1470,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setupVoiceButton();
             setupPlayButton();
             setupStopButton();
+            setupExpandableSidebars();
         }, 1000);
     });
 
@@ -1469,6 +1530,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         sendButton.addEventListener('click', () => handleSendMessage(userInput.value));
+
+        document.querySelectorAll('#sidebar li[data-question]').forEach(item => {
+            item.addEventListener('click', (e) => handleSendMessage(e.currentTarget.getAttribute('data-question')));
+        });
 
 
 const feedbackOverlay = document.getElementById('feedback-overlay');
