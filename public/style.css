@@ -254,11 +254,11 @@ body.dark-theme #feedback-cancel {
     display: flex;
     flex-direction: column;
     padding: 20px;
-    background: #FFFFFF;
-    color: #2C3E50;
+    background: #1634FF;
+    color: #FFFFFF;
     position: relative;
     flex-shrink: 0;
-    border-bottom: 1px solid #E0E8F7;
+    border-bottom: 1px solid #1694FF;
 }
 
 .header-top {
@@ -296,32 +296,36 @@ body.dark-theme #feedback-cancel {
     align-items: center;
     gap: 8px;
     padding: 6px 12px;
-    background: #E3F2FD;
+    background: #1694FF;
     border-radius: 20px;
-    border: 1px solid #2196F3;
+    border: 1px solid #1694FF;
     font-size: 12px;
     transition: all 0.3s ease;
 }
 
 .product-status-item-header:hover {
-    background: #BBDEFB;
+    background: #FFFFFF;
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+    box-shadow: 0 2px 8px rgba(22, 148, 255, 0.3);
 }
 
 .product-status-item-header .product-name {
     font-weight: 600;
-    color: #1976D2;
+    color: #FFFFFF;
 }
 
 .product-status-item-header .product-status {
     font-weight: 500;
-    color: #1976D2;
+    color: #1634FF;
     padding: 2px 6px;
-    background: #2196F3;
-    color: white;
+    background: #FFFFFF;
+    color: #1634FF;
     border-radius: 10px;
     font-size: 10px;
+}
+
+.product-status-item-header:hover .product-name {
+    color: #1634FF;
 }
 
 .chat-logo {
@@ -329,7 +333,7 @@ body.dark-theme #feedback-cancel {
     height: 60px;
     border-radius: 50%;
     object-fit: contain;
-    background: #2196F3;
+    background: #1694FF;
     padding: var(--espaco-xs);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -338,7 +342,7 @@ body.dark-theme #feedback-cancel {
     margin: 0;
     font-size: 24px;
     font-weight: 700;
-    color: #2C3E50;
+    color: #FFFFFF;
 }
 
 .status-indicator {
@@ -346,7 +350,7 @@ body.dark-theme #feedback-cancel {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #2196F3;
+    background-color: #1694FF;
     margin-left: 8px;
     animation: pulse 2s infinite;
 }
@@ -502,7 +506,7 @@ body.dark-theme #feedback-cancel {
 }
 
 .action-button {
-    background-color: #2196F3;
+    background-color: #1634FF;
     color: white;
 }
 .action-button:hover {
