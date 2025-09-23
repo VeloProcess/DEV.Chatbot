@@ -286,21 +286,25 @@ body.dark-theme #feedback-cancel {
 
 #product-status-container-header {
     display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 4px 0;
 }
 
 .product-status-item-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
+    gap: 6px;
+    padding: 4px 8px;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
+    border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    font-size: 12px;
+    font-size: 11px;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .product-status-item-header:hover {
@@ -317,11 +321,11 @@ body.dark-theme #feedback-cancel {
 .product-status-item-header .product-status {
     font-weight: 500;
     color: var(--cor-azul-medio);
-    padding: 2px 6px;
+    padding: 1px 4px;
     background: var(--cor-texto-claro);
     color: var(--cor-azul-medio);
-    border-radius: 10px;
-    font-size: 10px;
+    border-radius: 8px;
+    font-size: 9px;
 }
 
 .product-status-item-header:hover .product-name {
@@ -452,12 +456,40 @@ body.dark-theme #feedback-cancel {
 .chat-box {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 20px;
-    background-color: #FFFFFF;
+    padding: var(--espaco-md);
+    background-color: var(--cor-caixa-chat);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+}
+
+/* Mensagem inicial no topo do chat */
+.welcome-message {
+    background: var(--cor-container);
+    border-radius: var(--borda-raio);
+    padding: var(--espaco-lg);
+    margin-bottom: var(--espaco-md);
+    box-shadow: 0 2px 8px var(--cor-sombra);
+    border-left: 4px solid var(--cor-azul-medio);
+    animation: fadeIn var(--transicao-normal);
+}
+
+.welcome-message h3 {
+    margin: 0 0 var(--espaco-sm) 0;
+    color: var(--cor-azul-medio);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.welcome-message p {
+    margin: 0;
+    color: var(--cor-texto-principal);
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.welcome-message .emoji {
+    font-size: 24px;
+    margin-right: var(--espaco-sm);
 }
 
 

@@ -757,6 +757,13 @@ document.addEventListener('DOMContentLoaded', () => {
         function handleSendMessage(text) {
             const trimmedText = text.trim();
             if (!trimmedText) return;
+            
+            // Remover mensagem de boas-vindas se ainda estiver visível
+            const welcomeMessage = document.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+            
             addMessage(trimmedText, 'user');
             logQuestionOnSheet(trimmedText, dadosAtendente.email);
             buscarResposta(trimmedText);
@@ -1566,8 +1573,6 @@ if (feedbackSendBtn) {
             });
         }
 
-        const primeiroNome = dadosAtendente.nome.split(' ')[0];
-        addMessage(`Olá, ${primeiroNome}! Como posso te ajudar hoje?`, 'bot');
         setInitialTheme();
         carregarNoticias();
         carregarStatusProdutos();
