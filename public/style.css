@@ -532,10 +532,10 @@ body.dark-theme .welcome-message p {
 .input-area {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 20px;
-    background-color: #FFFFFF;
-    border-top: 1px solid #E0E8F7;
+    gap: var(--espaco-sm);
+    padding: var(--espaco-md);
+    background-color: var(--cor-container);
+    border-top: 1px solid var(--cor-borda);
     position: relative;
     flex-shrink: 0;
     flex-wrap: wrap;
@@ -545,9 +545,9 @@ body.dark-theme .welcome-message p {
     flex-grow: 1;
     padding: 12px 18px;
     border-radius: 24px;
-    border: 1px solid #E0E8F7;
-    background-color: #F5F7FA;
-    color: #2C3E50;
+    border: 1px solid var(--cor-borda);
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto-principal);
     font-size: 15px;
     outline: none;
     transition: var(--transicao-normal);
