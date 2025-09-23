@@ -1,4 +1,5 @@
 # Trigger file para forçar deploy do Vercel
 # Data: $(date)
-# Commit: 1024615
+# Commit: a985ea2
 # Status: Botão admin removido, toggle completo implementado
+# Versão: 2.0 - Sistema completo atualizado
