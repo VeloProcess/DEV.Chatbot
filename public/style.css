@@ -1566,7 +1566,7 @@ body.dark-theme .voice-selector:focus {
 .admin-btn {
     position: fixed;
     top: 20px;
-    right: 20px;
+    right: 80px; /* Mover para a esquerda para não conflitar com o botão de tema */
     background: #e74c3c;
     color: white;
     border: none;

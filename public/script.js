@@ -1247,8 +1247,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const refreshBtn = document.getElementById('refresh-users');
             const forceLogoutBtn = document.getElementById('force-logout-btn');
 
+            console.log('🔧 initAdminPanel chamado:', {
+                adminBtn: !!adminBtn,
+                adminPanel: !!adminPanel,
+                closeBtn: !!closeBtn,
+                refreshBtn: !!refreshBtn,
+                forceLogoutBtn: !!forceLogoutBtn
+            });
+
             if (adminBtn) {
                 adminBtn.addEventListener('click', () => {
+                    console.log('🔧 Botão de admin clicado');
                     adminPanel.classList.remove('hidden');
                     loadOnlineUsers();
                 });
@@ -1449,16 +1458,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const collapseLeftBtn = document.getElementById('collapse-left-sidebar');
             const collapseRightBtn = document.getElementById('collapse-right-sidebar');
 
-            // Expandir sidebar esquerda
+            // Toggle sidebar esquerda (botão de expansão)
             if (expandLeftBtn && leftSidebar) {
                 expandLeftBtn.addEventListener('click', function() {
-                    leftSidebar.classList.remove('sidebar-collapsed');
-                    leftSidebar.classList.add('sidebar-expanded');
-                    console.log('📂 Sidebar esquerda expandida');
+                    if (leftSidebar.classList.contains('sidebar-collapsed')) {
+                        leftSidebar.classList.remove('sidebar-collapsed');
+                        leftSidebar.classList.add('sidebar-expanded');
+                        console.log('📂 Sidebar esquerda expandida');
+                    } else {
+                        leftSidebar.classList.remove('sidebar-expanded');
+                        leftSidebar.classList.add('sidebar-collapsed');
+                        console.log('📁 Sidebar esquerda colapsada');
+                    }
                 });
             }
 
-            // Colapsar sidebar esquerda
+            // Toggle sidebar esquerda (botão de colapso)
             if (collapseLeftBtn && leftSidebar) {
                 collapseLeftBtn.addEventListener('click', function() {
                     leftSidebar.classList.remove('sidebar-expanded');
@@ -1467,16 +1482,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // Expandir sidebar direita
+            // Toggle sidebar direita (botão de expansão)
             if (expandRightBtn && rightSidebar) {
                 expandRightBtn.addEventListener('click', function() {
-                    rightSidebar.classList.remove('sidebar-collapsed');
-                    rightSidebar.classList.add('sidebar-expanded');
-                    console.log('📂 Sidebar direita expandida');
+                    if (rightSidebar.classList.contains('sidebar-collapsed')) {
+                        rightSidebar.classList.remove('sidebar-collapsed');
+                        rightSidebar.classList.add('sidebar-expanded');
+                        console.log('📂 Sidebar direita expandida');
+                    } else {
+                        rightSidebar.classList.remove('sidebar-expanded');
+                        rightSidebar.classList.add('sidebar-collapsed');
+                        console.log('📁 Sidebar direita colapsada');
+                    }
                 });
             }
 
-            // Colapsar sidebar direita
+            // Toggle sidebar direita (botão de colapso)
             if (collapseRightBtn && rightSidebar) {
                 collapseRightBtn.addEventListener('click', function() {
                     rightSidebar.classList.remove('sidebar-expanded');
