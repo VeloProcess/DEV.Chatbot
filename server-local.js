@@ -88,10 +88,6 @@ app.post('/api/voice', (req, res) => {
   voiceHandler(req, res);
 });
 
-app.get('/api/simple-test', (req, res) => {
-  console.log('🔍 Local: /api/simple-test chamado');
-  res.json({ status: 'success', message: 'API funcionando localmente' });
-});
 
 // Rota principal
 app.get('/', (req, res) => {

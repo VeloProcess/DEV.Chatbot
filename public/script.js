@@ -112,15 +112,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para verificar conectividade periodicamente
     async function checkConnectivity() {
         try {
-            // Usar endpoint de teste simples primeiro
-            const response = await fetch('/api/simple-test', {
+            // Usar endpoint de debug do voice para teste de conectividade
+            const response = await fetch('/api/voice?action=debug', {
                 method: 'GET',
                 signal: AbortSignal.timeout(3000) // 3 segundos de timeout
             });
             
             if (response.ok) {
                 const data = await response.json();
-                console.log('✅ Teste simples funcionou:', data);
+                console.log('✅ Teste de conectividade funcionou:', data);
                 updateConnectivityIndicator('online');
             } else {
                 console.log('❌ Teste simples falhou:', response.status);
