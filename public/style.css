@@ -2315,13 +2315,13 @@ body:not(.dark-theme) .product-button .product-name {
     background: rgba(244, 67, 54, 0.2);
 }
 
-/* Diminuir tamanho da fonte no tema escuro */
+/* Manter mesmo tamanho nos dois temas */
 .dark-theme .product-button .product-name {
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .dark-theme .product-button .product-emoji {
-    font-size: 18px;
+    font-size: 20px;
 }
 
 /* ==================== CHAT CENTRALIZADO ==================== */
