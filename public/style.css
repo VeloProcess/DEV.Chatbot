@@ -129,6 +129,8 @@ body.dark-theme::before {
     gap: var(--espaco-md);
     transition: var(--transicao-normal);
     position: relative;
+    align-items: center;
+    justify-items: center;
 }
 
 /* Quando sidebars estão expandidas, manter layout fixo */
@@ -2275,18 +2277,14 @@ body.dark-theme .voice-selector:focus {
 /* ==================== CHAT CENTRALIZADO ==================== */
 
 .chat-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative;
     z-index: 1001;
+    margin: 0 auto;
     max-width: 800px;
-    width: 90%;
-    max-height: 90vh;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    border-radius: 12px;
-    background: var(--cor-fundo-painel, #F3F7FC);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ==================== SIDEBARS EXPANSÍVEIS ==================== */
