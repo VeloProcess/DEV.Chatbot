@@ -128,6 +128,12 @@ body.dark-theme::before {
     height: 95vh;
     gap: var(--espaco-md);
     transition: var(--transicao-normal);
+    position: relative;
+}
+
+/* Quando sidebars estão expandidas, manter layout fixo */
+.app-wrapper:has(.sidebar-expanded) {
+    grid-template-columns: 280px 1fr 280px;
 }
 
 .panel {
@@ -2064,6 +2070,38 @@ body.dark-theme .voice-selector:focus {
     opacity: 1;
     transition: all 0.3s ease;
     overflow: visible;
+    position: fixed !important;
+    top: 0;
+    height: 100vh;
+    z-index: 1001;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-expanded#sidebar {
+    left: 0;
+}
+
+.sidebar-expanded#news-panel {
+    right: 0;
+}
+
+/* Overlay para sidebars expandidas */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Esconder botões de expansão quando as abas estão abertas */
