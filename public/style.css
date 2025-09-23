@@ -419,11 +419,11 @@ body.dark-theme .product-status-item-header:hover .product-name {
 
 /* Estados do indicador de conectividade */
 .connectivity-indicator.online {
-    color: #1634FF;
+    color: #4CAF50;
 }
 
 .connectivity-indicator.online #wifi-icon {
-    color: #1634FF;
+    color: #4CAF50;
 }
 
 .connectivity-indicator.offline {
