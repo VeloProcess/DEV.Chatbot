@@ -2275,20 +2275,22 @@ body.dark-theme .voice-selector:focus {
 /* ==================== CHAT CENTRALIZADO ==================== */
 
 .chat-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1001;
-    max-width: 800px;
-    width: 90%;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    border-radius: 12px;
-    background: var(--cor-container);
-    overflow: hidden;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 1001 !important;
+    width: 1000px !important;
+    height: 700px !important;
+    max-width: none !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+    border-radius: 12px !important;
+    background: var(--cor-container) !important;
+    overflow: hidden !important;
+    pointer-events: auto !important;
 }
 
 /* ==================== SIDEBARS EXPANSÍVEIS ==================== */
@@ -2393,5 +2395,12 @@ body.dark-theme .voice-selector:focus {
     .sidebar-collapsed {
         width: 100% !important;
         min-width: 100% !important;
+    }
+    
+    .chat-container {
+        width: 95% !important;
+        height: 80vh !important;
+        max-width: none !important;
+        max-height: none !important;
     }
 }
