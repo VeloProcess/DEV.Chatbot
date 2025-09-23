@@ -1815,7 +1815,7 @@ body.dark-theme .voice-selector:focus {
 
 /* --- 📱 ABAS LATERAIS EXPANSÍVEIS --- */
 .expand-btn {
-    position: absolute;
+    position: fixed;
     top: 50%;
     transform: translateY(-50%);
     width: 40px;
@@ -1843,27 +1843,23 @@ body.dark-theme .voice-selector:focus {
 }
 
 .expand-left {
-    right: -40px;
+    left: 0;
     border-radius: 0 10px 10px 0;
 }
 
 .expand-right {
-    left: -40px;
+    right: 0;
     border-radius: 10px 0 0 10px;
 }
 
-/* Quando a sidebar está colapsada, mostrar o botão */
-.sidebar-collapsed .expand-btn {
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    display: flex !important;
+/* Esconder botões de expansão quando as abas estão abertas */
+.sidebar-expanded ~ .expand-btn {
+    display: none !important;
 }
 
-/* Quando a sidebar está expandida, esconder o botão */
-.sidebar-expanded .expand-btn {
-    opacity: 0 !important;
-    pointer-events: none !important;
-    display: none !important;
+/* Mostrar botões quando as abas estão fechadas */
+.sidebar-collapsed ~ .expand-btn {
+    display: flex !important;
 }
 
 .collapse-btn {
