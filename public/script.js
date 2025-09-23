@@ -1067,6 +1067,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error('❌ Erro na transcrição:', result);
                     if (result.error && result.error.includes('legenda')) {
                         addMessage(`❌ Áudio não reconhecido. Tente falar mais claro ou verifique se não há ruído de fundo.`, 'bot');
+                    } else if (result.error && result.error.includes('vazio')) {
+                        addMessage(`❌ Nenhum áudio detectado. Verifique se o microfone está funcionando.`, 'bot');
+                    } else if (result.error && result.error.includes('Buffer')) {
+                        addMessage(`❌ Problema com o áudio. Tente gravar novamente.`, 'bot');
                     } else {
                         addMessage(`❌ Erro na transcrição: ${result.error}`, 'bot');
                     }

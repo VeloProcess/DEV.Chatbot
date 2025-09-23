@@ -80,8 +80,10 @@ async function speechToText(audioBlob) {
     ];
     
     const lowerTranscript = transcript.toLowerCase();
-    if (invalidTexts.some(invalid => lowerTranscript.includes(invalid))) {
-      throw new Error('Transcrição contém texto de legenda inválido');
+    const foundInvalid = invalidTexts.find(invalid => lowerTranscript.includes(invalid));
+    if (foundInvalid) {
+      console.log('❌ Texto inválido detectado:', foundInvalid);
+      throw new Error(`Transcrição contém texto de legenda inválido: "${foundInvalid}"`);
     }
     
     return {
