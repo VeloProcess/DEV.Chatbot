@@ -1196,12 +1196,20 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const adminRoles = ['Admin', 'Supervisor', 'Diretor'];
             const userRole = dadosAtendente.funcao;
-            const isAdminUser = adminRoles.includes(userRole);
+            
+            // Fallback: verificar se o email é de admin baseado no domínio e nome
+            const isAdminEmail = dadosAtendente.email.includes('gabriel.araujo') || 
+                               dadosAtendente.email.includes('admin') || 
+                               dadosAtendente.email.includes('diretor') || 
+                               dadosAtendente.email.includes('velotax');
+            
+            const isAdminUser = adminRoles.includes(userRole) || isAdminEmail;
             
             console.log('🔍 Verificação de admin:', {
                 email: dadosAtendente.email,
                 funcao: userRole,
                 adminRoles: adminRoles,
+                isAdminEmail: isAdminEmail,
                 isAdmin: isAdminUser
             });
             
@@ -1214,7 +1222,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('🔧 toggleAdminButton chamado:', {
                 adminBtn: !!adminBtn,
                 dadosAtendente: !!dadosAtendente,
-                funcao: dadosAtendente?.funcao
+                funcao: dadosAtendente?.funcao,
+                email: dadosAtendente?.email
             });
             
             if (adminBtn) {
