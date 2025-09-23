@@ -252,7 +252,7 @@ body.dark-theme #feedback-cancel {
     color: white;
 }
 #feedback-send:hover {
-    background-color: #45a049;
+    background-color: #1694FF;
 }
 
 /* --- 💬 PAINEL DO CHAT 💬 --- */
@@ -260,7 +260,7 @@ body.dark-theme #feedback-cancel {
     display: flex;
     flex-direction: column;
     padding: var(--espaco-lg);
-    background: #1634FF;
+    background: #1694FF;
     color: var(--cor-texto-claro);
     position: relative;
     flex-shrink: 0;
@@ -419,11 +419,11 @@ body.dark-theme .product-status-item-header:hover .product-name {
 
 /* Estados do indicador de conectividade */
 .connectivity-indicator.online {
-    color: #4CAF50;
+    color: #1634FF;
 }
 
 .connectivity-indicator.online #wifi-icon {
-    color: #4CAF50;
+    color: #1634FF;
 }
 
 .connectivity-indicator.offline {
@@ -435,11 +435,11 @@ body.dark-theme .product-status-item-header:hover .product-name {
 }
 
 .connectivity-indicator.no-connection {
-    color: #f44336;
+    color: #272A30;
 }
 
 .connectivity-indicator.no-connection #wifi-icon {
-    color: #f44336;
+    color: #272A30;
 }
 
 .connectivity-indicator.weak-signal {
@@ -1168,7 +1168,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    background-color: #4CAF50;
+    background-color: #1634FF;
     color: #fff;
     font-weight: 600;
 }
@@ -1201,7 +1201,7 @@ body {
 .chat-footer button {
     padding: 8px 16px;
     border: none;
-    background-color: #4CAF50;
+    background-color: #1634FF;
     color: #fff;
     border-radius: 8px;
     cursor: pointer;
@@ -1226,7 +1226,7 @@ body {
     justify-content: center;
     font-weight: bold;
     color: #fff;
-    background-color: #4CAF50;
+    background-color: #1634FF;
 }
 
 .message-content {
@@ -1243,7 +1243,7 @@ body {
 }
 
 .message-container.user .message {
-    background-color: #4CAF50;
+    background-color: #1634FF;
     color: #fff;
 }
 
@@ -1305,11 +1305,11 @@ body.dark-theme .message {
 }
 
 body.dark-theme .message-container.user .message {
-    background-color: #388E3C;
+    background-color: #1634FF;
 }
 
 body.dark-theme .chat-header {
-    background-color: #388E3C;
+    background-color: #1634FF;
 }
 
 body.dark-theme .chat-footer input {
@@ -2229,7 +2229,7 @@ body.dark-theme .voice-selector:focus {
 }
 
 .product-button.status-disponivel:hover {
-    background: rgba(21, 162, 55, 0.1);
+    background: rgba(22, 52, 255, 0.1);
 }
 
 .product-button.status-indisponivel {
@@ -2238,7 +2238,7 @@ body.dark-theme .voice-selector:focus {
 }
 
 .product-button.status-indisponivel:hover {
-    background: rgba(244, 67, 54, 0.1);
+    background: rgba(39, 42, 48, 0.1);
     opacity: 1;
 }
 
