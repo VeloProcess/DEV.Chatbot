@@ -1812,3 +1812,88 @@ body.dark-theme .voice-selector:focus {
         justify-content: space-between;
     }
 }
+
+/* --- 📱 ABAS LATERAIS EXPANSÍVEIS --- */
+.expand-btn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    border-radius: 0 8px 8px 0;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+}
+
+.expand-btn:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.expand-left {
+    left: 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.expand-right {
+    right: 0;
+    border-radius: 8px 0 0 8px;
+}
+
+.collapse-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.collapse-btn:hover {
+    background: rgba(0,0,0,0.1);
+    color: #333;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden;
+    transition: width 0.3s ease;
+}
+
+.sidebar-expanded {
+    width: 300px !important;
+    min-width: 300px !important;
+    transition: width 0.3s ease;
+}
+
+/* Esconder botões de expansão quando as abas estão abertas */
+.sidebar-expanded + .expand-btn {
+    display: none;
+}
+
+/* Responsividade para abas expansíveis */
+@media (max-width: 768px) {
+    .expand-btn {
+        display: none; /* Esconder botões de expansão em mobile */
+    }
+    
+    .sidebar-collapsed {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+}

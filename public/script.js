@@ -1377,22 +1377,29 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('load', () => {
             console.log('🌐 Janela carregada, verificando botões...');
             setTimeout(() => {
-                setupVoiceButton();
-                setupPlayButton();
-                setupStopButton();
-            }, 1000);
-        });
+            setupVoiceButton();
+            setupPlayButton();
+            setupStopButton();
+            setupExpandableSidebars();
+        }, 1000);
+    });
 
 
         // Configurar botão de voz - abordagem mais simples
         function setupVoiceButton() {
             const voiceBtn = document.getElementById('voice-button');
             if (voiceBtn) {
+                // Desabilitar botão de voz - EM BREVE
+                voiceBtn.innerHTML = '🎤 EM BREVE';
+                voiceBtn.style.background = 'linear-gradient(135deg, #95a5a6, #7f8c8d)';
+                voiceBtn.style.cursor = 'not-allowed';
+                voiceBtn.style.opacity = '0.6';
+                voiceBtn.disabled = true;
                 voiceBtn.onclick = function() {
-                    console.log('🎤 Botão de voz clicado!');
-                    toggleRecording();
+                    console.log('🎤 Botão de voz desabilitado - EM BREVE');
+                    addMessage('🎤 Em breve, sistema de transcrição de áudio para texto, para podermos conversar com o bot sobre nossos procedimentos internos!', 'bot');
                 };
-                console.log('✅ Botão de voz configurado');
+                console.log('✅ Botão de voz configurado (EM BREVE)');
             } else {
                 console.error('❌ Botão de voz não encontrado');
             }
@@ -1402,11 +1409,17 @@ document.addEventListener('DOMContentLoaded', () => {
         function setupPlayButton() {
             const playBtn = document.getElementById('play-response');
             if (playBtn) {
+                // Desabilitar botão de play - EM BREVE
+                playBtn.innerHTML = '🔊 EM BREVE';
+                playBtn.style.background = 'linear-gradient(135deg, #95a5a6, #7f8c8d)';
+                playBtn.style.cursor = 'not-allowed';
+                playBtn.style.opacity = '0.6';
+                playBtn.disabled = true;
                 playBtn.onclick = function() {
-                    console.log('🔊 Botão de play clicado!');
-                    playLastResponse();
+                    console.log('🔊 Botão de play desabilitado - EM BREVE');
+                    addMessage('🔊 Em breve, sistema de síntese de voz, para o bot responder com áudio sobre nossos procedimentos internos!', 'bot');
                 };
-                console.log('✅ Botão de play configurado');
+                console.log('✅ Botão de play configurado (EM BREVE)');
             }
         }
 
@@ -1420,6 +1433,60 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 console.log('✅ Botão de stop configurado');
             }
+        }
+
+        // ==================== ABAS LATERAIS EXPANSÍVEIS ====================
+        
+        // Configurar abas laterais expansíveis
+        function setupExpandableSidebars() {
+            const leftSidebar = document.getElementById('sidebar');
+            const rightSidebar = document.getElementById('news-panel');
+            const expandLeftBtn = document.getElementById('expand-left-sidebar');
+            const expandRightBtn = document.getElementById('expand-right-sidebar');
+            const collapseLeftBtn = document.getElementById('collapse-left-sidebar');
+            const collapseRightBtn = document.getElementById('collapse-right-sidebar');
+
+            // Expandir sidebar esquerda
+            if (expandLeftBtn && leftSidebar) {
+                expandLeftBtn.addEventListener('click', function() {
+                    leftSidebar.classList.remove('sidebar-collapsed');
+                    leftSidebar.classList.add('sidebar-expanded');
+                    expandLeftBtn.style.display = 'none';
+                    console.log('📂 Sidebar esquerda expandida');
+                });
+            }
+
+            // Colapsar sidebar esquerda
+            if (collapseLeftBtn && leftSidebar) {
+                collapseLeftBtn.addEventListener('click', function() {
+                    leftSidebar.classList.remove('sidebar-expanded');
+                    leftSidebar.classList.add('sidebar-collapsed');
+                    expandLeftBtn.style.display = 'block';
+                    console.log('📁 Sidebar esquerda colapsada');
+                });
+            }
+
+            // Expandir sidebar direita
+            if (expandRightBtn && rightSidebar) {
+                expandRightBtn.addEventListener('click', function() {
+                    rightSidebar.classList.remove('sidebar-collapsed');
+                    rightSidebar.classList.add('sidebar-expanded');
+                    expandRightBtn.style.display = 'none';
+                    console.log('📂 Sidebar direita expandida');
+                });
+            }
+
+            // Colapsar sidebar direita
+            if (collapseRightBtn && rightSidebar) {
+                collapseRightBtn.addEventListener('click', function() {
+                    rightSidebar.classList.remove('sidebar-expanded');
+                    rightSidebar.classList.add('sidebar-collapsed');
+                    expandRightBtn.style.display = 'block';
+                    console.log('📁 Sidebar direita colapsada');
+                });
+            }
+
+            console.log('✅ Abas laterais expansíveis configuradas');
         }
 
 

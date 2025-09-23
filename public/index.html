@@ -33,10 +33,18 @@
     </div>
 
     <div class="app-wrapper hidden">
-        <div id="sidebar" class="panel">
-    <div class="panel-header">
-        <h2>Perguntas Frequentes</h2>
-    </div>
+        <!-- Botão para expandir sidebar esquerda -->
+        <button id="expand-left-sidebar" class="expand-btn expand-left">
+            <i class='bx bx-arrow-from-left-stroke'></i>
+        </button>
+        
+        <div id="sidebar" class="panel sidebar-collapsed">
+            <div class="panel-header">
+                <h2>Perguntas Frequentes</h2>
+                <button id="collapse-left-sidebar" class="collapse-btn">
+                    <i class='bx bx-arrow-from-right-stroke'></i>
+                </button>
+            </div>
             <div class="sidebar-content">
         <div class="question-category">Status dos Produtos</div>
         <div id="product-status-container">
@@ -157,9 +165,17 @@
                 </div>
             </div>
         </div>
-        <div id="news-panel" class="panel">
+        <!-- Botão para expandir sidebar direita -->
+        <button id="expand-right-sidebar" class="expand-btn expand-right">
+            <i class='bx bx-arrow-from-left-stroke'></i>
+        </button>
+        
+        <div id="news-panel" class="panel sidebar-collapsed">
             <div class="panel-header">
                 <h2>Notícias e Alertas</h2>
+                <button id="collapse-right-sidebar" class="collapse-btn">
+                    <i class='bx bx-arrow-from-right-stroke'></i>
+                </button>
             </div>
             <div id="news-list" class="news-list">
                 <div class="news-item-skeleton">
