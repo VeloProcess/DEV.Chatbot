@@ -148,10 +148,6 @@ body.dark-theme::before {
     transition: all var(--transicao-normal);
 }
 
-.chat-container {
-    position: relative;
-    z-index: 1001;
-}
 
 .panel:hover {
     transform: translateY(-2px);
@@ -2285,8 +2281,8 @@ body.dark-theme .voice-selector:focus {
     right: 0;
     width: 300px;
     height: 100vh;
-    background: var(--panel-bg);
-    border-left: 1px solid var(--border-color);
+    background: #F3F7FC;
+    border-left: 1px solid #272A30;
     z-index: 100;
     overflow-y: auto;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
@@ -2294,6 +2290,8 @@ body.dark-theme .voice-selector:focus {
 
 /* Ajustar o chat-container para não sobrepor o painel de notícias */
 .chat-container {
+    position: relative;
+    z-index: 1001;
     margin-right: 300px;
     width: calc(100% - 300px);
 }
@@ -2305,7 +2303,7 @@ body.dark-theme .voice-selector:focus {
         height: auto;
         position: relative;
         border-left: none;
-        border-top: 1px solid var(--border-color);
+        border-top: 1px solid #272A30;
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     }
     
