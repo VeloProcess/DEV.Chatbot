@@ -16,8 +16,8 @@
     --cor-texto-principal: #333;
     --cor-borda: #d1e3f0;
     --cor-azul-claro: #a7d9ee;
-    --cor-azul-medio: #007BFF;
-    --cor-azul-escuro: #0056b3;
+    --cor-azul-medio: #1634FF;
+    --cor-azul-escuro: #000058;
     --cor-balao-bot: #D6E4FF;
     --cor-sombra: rgba(0, 0, 0, 0.1);
     --cor-texto-link: #1a73e8;
@@ -253,12 +253,11 @@ body.dark-theme #feedback-cancel {
 .chat-header {
     display: flex;
     flex-direction: column;
-    padding: 20px;
-    background: #1634FF;
-    color: #FFFFFF;
+    padding: var(--espaco-lg);
+    background: linear-gradient(135deg, var(--cor-azul-medio) 0%, var(--cor-azul-escuro) 100%);
+    color: var(--cor-texto-claro);
     position: relative;
     flex-shrink: 0;
-    border-bottom: 1px solid #1694FF;
 }
 
 .header-top {
@@ -296,62 +295,64 @@ body.dark-theme #feedback-cancel {
     align-items: center;
     gap: 8px;
     padding: 6px 12px;
-    background: #1694FF;
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 20px;
-    border: 1px solid #1694FF;
+    border: 1px solid rgba(255, 255, 255, 0.3);
     font-size: 12px;
     transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
 .product-status-item-header:hover {
-    background: #FFFFFF;
+    background: rgba(255, 255, 255, 0.3);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(22, 148, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .product-status-item-header .product-name {
     font-weight: 600;
-    color: #FFFFFF;
+    color: var(--cor-texto-claro);
 }
 
 .product-status-item-header .product-status {
     font-weight: 500;
-    color: #1634FF;
+    color: var(--cor-azul-medio);
     padding: 2px 6px;
-    background: #FFFFFF;
-    color: #1634FF;
+    background: var(--cor-texto-claro);
+    color: var(--cor-azul-medio);
     border-radius: 10px;
     font-size: 10px;
 }
 
 .product-status-item-header:hover .product-name {
-    color: #1634FF;
+    color: var(--cor-azul-medio);
 }
 
 .chat-logo {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
+    margin-bottom: var(--espaco-sm);
     border-radius: 50%;
     object-fit: contain;
-    background: #1694FF;
+    background: white;
     padding: var(--espaco-xs);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .chat-title {
     margin: 0;
-    font-size: 24px;
-    font-weight: 700;
-    color: #FFFFFF;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--cor-texto-claro);
 }
 
 .status-indicator {
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
-    background-color: #1694FF;
-    margin-left: 8px;
+    background-color: var(--cor-sucesso);
+    margin-left: var(--espaco-sm);
     animation: pulse 2s infinite;
 }
 
@@ -506,7 +507,7 @@ body.dark-theme #feedback-cancel {
 }
 
 .action-button {
-    background-color: #1634FF;
+    background-color: var(--cor-azul-medio);
     color: white;
 }
 .action-button:hover {
