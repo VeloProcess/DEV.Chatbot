@@ -1064,7 +1064,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     addMessage(`🎤 Você disse: "${result.text}"`, 'user');
                     buscarResposta(result.text);
                 } else {
-                    addMessage(`❌ Erro na transcrição: ${result.error}`, 'bot');
+                    console.error('❌ Erro na transcrição:', result);
+                    if (result.error && result.error.includes('legenda')) {
+                        addMessage(`❌ Áudio não reconhecido. Tente falar mais claro ou verifique se não há ruído de fundo.`, 'bot');
+                    } else {
+                        addMessage(`❌ Erro na transcrição: ${result.error}`, 'bot');
+                    }
                 }
 
             } catch (error) {
