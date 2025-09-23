@@ -25,6 +25,7 @@ const adminHandler = require('./api/admin');
 const logQuestionHandler = require('./api/logQuestion');
 const getNewsHandler = require('./api/getNews');
 const getProductStatusHandler = require('./api/getProductStatus');
+const voiceHandler = require('./api/voice');
 
 const app = express();
 const PORT = 3000;
@@ -75,6 +76,16 @@ app.get('/api/getNews', (req, res) => {
 app.get('/api/getProductStatus', (req, res) => {
   console.log('🔍 Local: /api/getProductStatus chamado');
   getProductStatusHandler(req, res);
+});
+
+app.get('/api/voice', (req, res) => {
+  console.log('🔍 Local: /api/voice chamado');
+  voiceHandler(req, res);
+});
+
+app.post('/api/voice', (req, res) => {
+  console.log('🔍 Local: /api/voice (POST) chamado');
+  voiceHandler(req, res);
 });
 
 app.get('/api/simple-test', (req, res) => {
