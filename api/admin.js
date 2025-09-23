@@ -1,6 +1,8 @@
 // api/admin.js - API Unificada de Administração
 
 const { google } = require('googleapis');
+const fs = require('fs');
+const path = require('path');
 
 const SPREADSHEET_ID = "1tnWusrOW-UXHFM8GT3o0Du93QDwv5G3Ylvgebof9wfQ";
 
@@ -9,6 +11,31 @@ const auth = new google.auth.GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
 const sheets = google.sheets({ version: 'v4', auth });
+
+// Função para carregar dados de cargos do arquivo JSON
+function loadCargosData() {
+  try {
+    const cargosPath = path.join(__dirname, '../Cargos.json');
+    console.log('🔍 admin: Carregando dados de cargos de:', cargosPath);
+    
+    const fileContent = fs.readFileSync(cargosPath, 'utf8');
+    const cargosData = JSON.parse(fileContent);
+    
+    console.log('✅ admin: Dados de cargos carregados:', cargosData.length, 'usuários');
+    return cargosData;
+    
+  } catch (error) {
+    console.error('❌ admin: Erro ao carregar dados de cargos:', error);
+    return [];
+  }
+}
+
+// Função para buscar usuário por email nos dados de cargos
+function findUserByEmail(email, cargosData) {
+  return cargosData.find(user => 
+    user['e-mail'] && user['e-mail'].toLowerCase() === email.toLowerCase()
+  );
+}
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -228,27 +255,26 @@ async function getUserProfile(email, res) {
 // Função auxiliar para buscar perfil do usuário (otimizada)
 async function getUserProfileData(email) {
   try {
-    // Timeout de 5 segundos para busca de perfil
-    const profilePromise = sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'FAQ!A:D', // Usar aba FAQ temporariamente
-    });
-
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Timeout na busca de perfil')), 5000);
-    });
-
-    const response = await Promise.race([profilePromise, timeoutPromise]);
-    const rows = response.data.values || [];
-    
     console.log('🔍 getUserProfile: Buscando perfil para:', email);
-    console.log('📊 getUserProfile: Dados da planilha obtidos:', rows.length, 'linhas');
     
-    // Verificar se o email é de admin baseado no domínio e nome
+    // Carregar dados de cargos do arquivo JSON
+    const cargosData = loadCargosData();
+    const user = findUserByEmail(email, cargosData);
+    
+    if (user) {
+      console.log('✅ getUserProfile: Perfil encontrado no arquivo Cargos.json:', user);
+      return {
+        email: user['e-mail'],
+        nome: user.nome,
+        funcao: user.cargo
+      };
+    }
+    
+    // Fallback: verificar se o email é de admin baseado no domínio e nome
     const isAdminEmail = email.includes('gabriel.araujo') || email.includes('admin') || email.includes('diretor') || email.includes('velotax');
     
     if (isAdminEmail) {
-      console.log('✅ getUserProfile: Usuário identificado como admin');
+      console.log('✅ getUserProfile: Usuário identificado como admin (fallback)');
       return {
         email: email,
         nome: email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
@@ -257,7 +283,7 @@ async function getUserProfileData(email) {
     }
     
     // Para outros usuários, retornar perfil padrão
-    console.log('📋 getUserProfile: Usuário padrão');
+    console.log('📋 getUserProfile: Usuário padrão (fallback)');
     return {
       email: email,
       nome: email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
