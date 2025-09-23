@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // >>> INÍCIO DA CORREÇÃO <<<
+    // >>> INÍCIO DA CORREÇÃO - v2.0 <<<
     // Função autônoma para definir o tema inicial
     function setInitialTheme() {
         const body = document.body;
