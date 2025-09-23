@@ -2236,17 +2236,18 @@ body.dark-theme .voice-selector:focus {
 }
 
 .product-button .product-name {
-    font-weight: 600;
-    font-size: 16px;
+    font-weight: 700;
+    font-size: 18px;
     color: var(--cor-texto-principal);
     text-align: center;
     margin: 0;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
 }
 
 .product-button .product-emoji {
-    font-size: 18px;
-    margin-left: 8px;
+    font-size: 20px;
+    margin-left: 10px;
 }
 
 /* Efeito de ripple ao clicar */
@@ -2276,11 +2277,11 @@ body.dark-theme .voice-selector:focus {
     }
     
     .product-button .product-name {
-        font-size: 14px;
+        font-size: 16px;
     }
     
     .product-button .product-emoji {
-        font-size: 16px;
+        font-size: 18px;
     }
 }
 
