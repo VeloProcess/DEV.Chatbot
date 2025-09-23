@@ -633,8 +633,8 @@ body.dark-theme .welcome-message p {
     margin-left: var(--espaco-sm);
 }
 .avatar.bot {
-    background-color: var(--cor-balao-bot);
-    color: var(--cor-texto-principal);
+    background-color: var(--cor-azul-medio);
+    color: var(--cor-texto-claro);
     margin-right: var(--espaco-sm);
 }
 
@@ -659,6 +659,17 @@ body.dark-theme .welcome-message p {
     background: var(--cor-balao-bot);
     color: var(--cor-texto-principal);
     border-bottom-left-radius: 4px;
+}
+
+/* Garantir contraste adequado para mensagens do bot */
+body:not(.dark-theme) .bot .message {
+    background: #f8f9fa;
+    color: #212529;
+}
+
+body.dark-theme .bot .message {
+    background: #2c3e50;
+    color: #e0e0e0;
 }
 
 /* Indicador de Digitando */
@@ -700,6 +711,19 @@ body.dark-theme .welcome-message p {
     text-align: left;
     color: var(--cor-azul-medio);
     transition: all 0.2s ease;
+}
+
+/* Garantir contraste adequado para botões de esclarecimento */
+body:not(.dark-theme) .clarification-item {
+    background-color: #ffffff;
+    color: #1634FF;
+    border-color: #d1e3f0;
+}
+
+body.dark-theme .clarification-item {
+    background-color: #1e1e1e;
+    color: #3a9bff;
+    border-color: #334a5f;
 }
 
 .clarification-item:hover {
@@ -784,6 +808,19 @@ body.dark-theme .clarification-item:hover {
     border: 1px solid var(--cor-borda);
     background-color: var(--cor-fundo-card); /* Fundo sutil padrão */
     color: var(--cor-texto-principal);
+}
+
+/* Garantir contraste adequado para perguntas frequentes */
+body:not(.dark-theme) #sidebar li[data-question] {
+    background-color: #f8f9fa;
+    color: #212529;
+    border-color: #d1e3f0;
+}
+
+body.dark-theme #sidebar li[data-question] {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border-color: #334a5f;
 }
 
 #sidebar li[data-question]:hover {
